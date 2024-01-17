@@ -26,8 +26,11 @@ def get_url_status_info( url: str ) -> dict:
             "url": res.url,
             "status": res.status_code
         } )
+    
+    if len( history ) > 0:
+        history[ len(history) - 1 ]['url'] = resp.url
 
-    status_code = history[0]['status'] if len( history ) > 0  else resp.status_code
+    status_code = history[0]['status'] if len( history ) > 0 and resp.status_code == 200  else resp.status_code
     return {
         "status": status_code,
         "url": history[0]['url'] if len( history ) > 0  else resp.url,
@@ -101,7 +104,7 @@ def could_be_spammy( url_resp: dict ):
 
 
 def analyze_url( url: str, timestamp: str ) -> dict:
-    tm = date_parser.parse(timestamp)
+    #tm = date_parser.parse(timestamp)
     json_data = get_url_status_info(url)
     json_data['spammy'] = could_be_spammy(json_data)
     json_data['uid'] = uuid4()
