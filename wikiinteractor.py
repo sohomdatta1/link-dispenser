@@ -51,7 +51,7 @@ def parse_cite_templates_from_article( text: str ) -> List[str]:
     for template in templates:
         if  str( template.name ).lower().startswith("cite "):
             url = check_if_has_url(template)
-            if url:
+            if url and str( url ).startswith('http'):
                 intresting_templates.append( {
                     "url": url,
                     "input": str( template ),
