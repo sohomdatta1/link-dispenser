@@ -72,6 +72,10 @@ def get_iarchive_data( url: str, date: int ) -> dict:
         return {
             "status": 0
         }
+    except Exception as _:
+        return {
+            "status": 0
+        }
     return {
         "status": 1,
         "archive_url": near.archive_url,
