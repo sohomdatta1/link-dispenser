@@ -7,13 +7,17 @@
             </cdx-info-chip>&nbsp;
             <cdx-info-chip>
                 Retrieved on: {{ $props.data['access-date' ] }}
+            </cdx-info-chip>&nbsp;
+            <cdx-info-chip v-if="$props.data['archive_url']">
+                <a :href="$props.data['archive_url']" target="_blank" class="link-general-chip">Already has archive.org link</a>
             </cdx-info-chip>
+
 		</template>
 
         <template #description v-if="$props.data">
-            <cdx-icon :icon="cdxIconLink" /> {{ $props.data['url_infos']['url'] }}
+            <cdx-icon :icon="cdxIconLink" /> <a :href="$props.data['url_infos']['url']" target="_blank" class="link-general">{{ $props.data['url_infos']['url'] }}</a>
             <br>
-            <cdx-info-chip status="notice" v-if="$props.data['url_infos']['status'] !== 1337">
+            <cdx-info-chip status="notice">
                 Status code: {{ $props.data['url_infos'][ 'status' ] }}
             </cdx-info-chip>
 		</template>
@@ -26,18 +30,28 @@
             </cdx-info-chip>&nbsp;
             <cdx-info-chip>
                 Retrieved on: {{ $props.data['access-date' ] }}
+            </cdx-info-chip>&nbsp;
+            <cdx-info-chip>
+                Retrieved on: {{ $props.data['access-date' ] }}
+            </cdx-info-chip>&nbsp;
+            <cdx-info-chip v-if="$props.data['archive_url']">
+                <a :href="$props.data['archive_url']" target="_blank" class="link-general-chip">Already has archive.org link</a>
+            </cdx-info-chip>
+            <cdx-info-chip v-if="!$props.data['archive_url'] && $props.data['url_infos']['archives']['status'] === 1">
+                <a :href="$props.data['url_infos']['archives']['archive_url']" target="_blank" class="link-general-chip">Archive.org archived copy available</a>
             </cdx-info-chip>
 		</template>
 
         <template #description v-if="$props.data">
-            <cdx-icon :icon="cdxIconLink" /> {{ $props.data['url_infos']['url'] }}
-            <template v-for="url in $props.data['url_infos']['history']" :key="url['url']">
-                <cdx-icon :icon="cdxIconArrowNext" /> {{ url['url'] }}
-            </template>
+            <cdx-icon :icon="cdxIconLink" /> <a :href="$props.data['url_infos']['url']" target="_blank" class="link-general">{{ $props.data['url_infos']['url'] }}</a>
             <br>
-            <cdx-info-chip status="notice" v-if="$props.data['url_infos']['status'] !== 1337">
+            <template v-for="url in $props.data['url_infos']['history']" :key="url['url']">
+                <cdx-icon :icon="cdxIconArrowNext" /> <a :href="url['url']" target="_blank" class="link-general">{{ url['url'] }}</a><br>
+            </template>
+            <cdx-info-chip status="notice">
                 Status code: {{ $props.data['url_infos'][ 'status' ] }}
             </cdx-info-chip>
+
 		</template>
     </cdx-card>
     <cdx-card v-if="$props.data && ($props.data['url_infos'][ 'desc' ] === 'down' || $props.data['url_infos'][ 'desc' ] === 'dead')" :icon="cdxIconError" :class="`card-type-${$props.data['url_infos'][ 'desc' ]}`">
@@ -48,11 +62,19 @@
             </cdx-info-chip>&nbsp;
             <cdx-info-chip>
                 Retrieved on: {{ $props.data['access-date' ] }}
+            </cdx-info-chip>&nbsp;
+            <cdx-info-chip v-if="$props.data['archive_url']">
+                <a :href="$props.data['archive_url']" target="_blank" class="link-general-chip">
+                    Already has archive.org link
+                </a>
+            </cdx-info-chip>
+            <cdx-info-chip v-if="!$props.data['archive_url'] && $props.data['url_infos']['archives']['status'] === 1">
+                <a :href="$props.data['url_infos']['archives']['archive_url']" target="_blank" class="link-general-chip"> Archive.org archived copy available </a>
             </cdx-info-chip>
 		</template>
 
         <template #description v-if="$props.data">
-            <cdx-icon :icon="cdxIconLink" /> {{ $props.data['url_infos']['url'] }}
+            <cdx-icon :icon="cdxIconLink" /> <a :href="$props.data['url_infos']['url']" target="_blank" class="link-general">{{ $props.data['url_infos']['url'] }}</a>
             <br>
             <cdx-info-chip status="notice" v-if="$props.data['url_infos']['status'] !== 1337">
                 Status code: {{ $props.data['url_infos'][ 'status' ] }}
@@ -63,9 +85,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent } from 'vue'
 import { CdxCard, CdxIcon, CdxInfoChip } from '@wikimedia/codex';
-import { cdxIconLink, cdxIconSuccess, cdxIconAlert, cdxIconError, cdxIconArrowNext } from '@wikimedia/codex-icons';
+import { cdxIconLink, cdxIconSuccess, cdxIconAlert, cdxIconError, cdxIconArrowNext, cdxIconCalendar } from '@wikimedia/codex-icons';
 
 export default defineComponent({
     components: { CdxCard, CdxIcon, CdxInfoChip },
@@ -77,7 +99,8 @@ export default defineComponent({
         cdxIconSuccess,
         cdxIconAlert,
         cdxIconError,
-        cdxIconArrowNext
+        cdxIconArrowNext,
+        cdxIconCalendar
 	} ),
     setup( props ) {
         if ( !props.data ) {
@@ -107,5 +130,14 @@ export default defineComponent({
 
 .card-type-redirect {
     color: @color-progressive;
+}
+
+.link-general {
+    color: inherit;
+    text-decoration: none;
+}
+
+.link-general-chip {
+    color: inherit;
 }
 </style>

@@ -26,8 +26,10 @@ def get_url_status_info( url: str ) -> dict:
             "url": res.url,
             "status": res.status_code
         } )
+
+    status_code = history[0]['status'] if len( history ) > 0  else resp.status_code
     return {
-        "status": resp.status_code,
+        "status": status_code,
         "url": resp.url,
         "history": history
     }
@@ -101,7 +103,7 @@ def analyze_url( url: str, timestamp: str ) -> dict:
     json_data['uid'] = uuid4()
     if json_data['status'] == 200 and not json_data['spammy']:
         json_data['desc'] = 'ok'
-    elif json_data['status'] > 300 and json_data['status'] < 399 and not json_data['spammy']:
+    elif ( ( json_data['status'] > 300 and json_data['status'] < 399) or len( json_data['history'] ) != 0 ) and not json_data['spammy']:
         json_data['desc'] = 'redirect'
     elif json_data['spammy']:
         json_data['desc'] = 'spammy'
@@ -113,4 +115,8 @@ def analyze_url( url: str, timestamp: str ) -> dict:
     if json_data['status'] > 399 or json_data['spammy']:
         json_data['dns'] = bool( get_dns_info(url)['status'] )
         json_data['archives'] = get_iarchive_data(url, int( tm.timestamp() ))
+    else:
+        json_data['archives'] = {
+            "status": 0
+        }
     return json_data
