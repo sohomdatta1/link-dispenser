@@ -30,7 +30,7 @@ def get_url_status_info( url: str ) -> dict:
     status_code = history[0]['status'] if len( history ) > 0  else resp.status_code
     return {
         "status": status_code,
-        "url": resp.url,
+        "url": history[0]['url'] if len( history ) > 0  else resp.url,
         "history": history
     }
 
@@ -118,7 +118,10 @@ def analyze_url( url: str, timestamp: str ) -> dict:
     json_data['ok'] = json_data['status'] == 200 or json_data['spammy']
     if json_data['status'] > 399 or json_data['spammy']:
         json_data['dns'] = bool( get_dns_info(url)['status'] )
-        json_data['archives'] = get_iarchive_data(url, int( tm.timestamp() ))
+        json_data['archives'] = {
+            "status": 0
+        }
+        #get_iarchive_data(url, int( tm.timestamp() ))
     else:
         json_data['archives'] = {
             "status": 0
