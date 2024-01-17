@@ -31,9 +31,6 @@
             <cdx-info-chip>
                 Retrieved on: {{ $props.data['access-date' ] }}
             </cdx-info-chip>&nbsp;
-            <cdx-info-chip>
-                Retrieved on: {{ $props.data['access-date' ] }}
-            </cdx-info-chip>&nbsp;
             <cdx-info-chip v-if="$props.data['archive_url']">
                 <a :href="$props.data['archive_url']" target="_blank" class="link-general-chip">Already has archive.org link</a>
             </cdx-info-chip>
