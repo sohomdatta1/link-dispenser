@@ -31,6 +31,9 @@ def check_if_has_url( template: mpfh.nodes.Template ) -> str|None:
 def get_access_date( template: mpfh.nodes.Template ) -> str|None:
     if template.has("access-date"):
         return str( template.get("access-date").value ).strip()
+    return None
+
+def get_publication_date( template: mpfh.nodes.Template ) -> str|None:
     if template.has("date"):
         return str( template.get("date").value ).strip()
     return None
@@ -57,7 +60,8 @@ def parse_cite_templates_from_article( text: str ) -> List[str]:
                     "input": str( template ),
                     "access-date": get_access_date( template ),
                     "archive_url": get_archive_url( template ),
-                    "title": get_title( template )
+                    "title": get_title( template ),
+                    "publication_date": get_publication_date( template )
                 } )
     return intresting_templates
 

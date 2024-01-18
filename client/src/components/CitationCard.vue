@@ -5,7 +5,10 @@
             <cdx-info-chip v-if="$props.data['url_infos'][ 'desc' ] !== 'ok'">
                 Detected issue: URL might be {{ $props.data['url_infos'][ 'desc' ]  }}
             </cdx-info-chip>&nbsp;
-            <cdx-info-chip>
+            <cdx-info-chip v-if="$props.data['publication_date' ]">
+                Published on: {{ $props.data['publication_date' ] }}
+            </cdx-info-chip>&nbsp;
+            <cdx-info-chip v-if="$props.data['access-date' ]">
                 Retrieved on: {{ $props.data['access-date' ] }}
             </cdx-info-chip>&nbsp;
             <cdx-info-chip v-if="$props.data['archive_url']">
@@ -28,7 +31,10 @@
             <cdx-info-chip v-if="$props.data['url_infos'][ 'desc' ] !== 'ok'">
                 Detected issue: URL might be {{ $props.data['url_infos'][ 'desc' ] }}
             </cdx-info-chip>&nbsp;
-            <cdx-info-chip>
+            <cdx-info-chip v-if="$props.data['publication_date' ]">
+                Published on: {{ $props.data['publication_date' ] }}
+            </cdx-info-chip>&nbsp;
+            <cdx-info-chip v-if="$props.data['access-date' ]">
                 Retrieved on: {{ $props.data['access-date' ] }}
             </cdx-info-chip>&nbsp;
             <cdx-info-chip v-if="$props.data['archive_url']">
@@ -57,7 +63,10 @@
             <cdx-info-chip v-if="$props.data['url_infos'][ 'desc' ] !== 'ok'">
                 Detected issue: URL might be {{ $props.data['url_infos'][ 'desc' ]  }}
             </cdx-info-chip>&nbsp;
-            <cdx-info-chip>
+            <cdx-info-chip v-if="$props.data['publication_date' ]">
+                Published on: {{ $props.data['publication_date' ] }}
+            </cdx-info-chip>&nbsp;
+            <cdx-info-chip v-if="$props.data['access-date' ]">
                 Retrieved on: {{ $props.data['access-date' ] }}
             </cdx-info-chip>&nbsp;
             <cdx-info-chip v-if="$props.data['archive_url']">

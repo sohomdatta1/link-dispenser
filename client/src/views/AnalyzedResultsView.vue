@@ -3,10 +3,13 @@
     <div v-if="!showResults" class="maho-text-wrapper">
         <div>Analyzing <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a>, this might take a while..... I'd suggest grabbing a cup of coffee, taking a walk or doing some other activity</div>
     </div>
-    <div v-if="showResults && !success" class="maho-text-wrapper">
+    <div v-if="showResults && notSuccess" class="maho-text-wrapper">
         This article does not exist.
     </div>
-    <template v-if="showResults && success">
+    <div v-if="showResults && erroredOut" class="maho-text-wrapper">
+        Something definitely went wrong here. Please report this URL to [[en:User talk:Sohom_Datta]] or sohom_#0 on Discord.
+    </div>
+    <template v-if="showResults && !notSuccess">
         <div class="floating-header">
             <div>
                 <h1>Results for <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a></h1>
@@ -45,9 +48,10 @@ export default defineComponent({
     components: { CdxProgressBar, CitationCard, CdxToggleButtonGroup },
     setup() {
         const showResults = ref( false );
-        const success = ref( false );
+        const notSuccess = ref( false );
         let fetchedData: any[] = [];
         const actualData: Ref<any[]> = ref( [] );
+        const erroredOut = ref( false );
         const totalCount = ref( 0 );
         const currentlySelectedTab = ref( 'all' );
         const route = useRoute();
@@ -81,66 +85,54 @@ export default defineComponent({
                 label: 'Links that are dead',
                 number: 0,
                 value: 'dead'
+            },
+            {
+                label: 'Already has a archive.org link',
+                value: 'archive'
+            },
+            {
+                label: 'Does not have a archive.org link',
+                value: 'notarchive'
             }
         ]);
         const pagename = route.params.articleName;
-        fetch( `/api/analyze/${pagename}` )
+        const nocache = new URL( location.href ).searchParams.get( 'nocache' );
+        fetch( `/api/analyze/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? Math.random() : 'yes' }` )
             .then( response => response.json() )
             .then( ( data: any ) => {
                 if ( !data['exists'] ) {
                     showResults.value = true;
+                    notSuccess.value = true;
                     return;
                 }
                 document.title = `Results for ${pagename}`
                 fetchedData = data['template_info']
                 actualData.value = fetchedData;
                 showResults.value = true;
-                success.value = true;
                 totalCount.value = fetchedData.length;
-                buttons.value = [
-                    {
-                        label: 'All',
-                        number: data['template_info'].length,
-                        value: 'all'
-                    },
-                    {
-                        label: 'No issues',
-                        number: data['template_info'].filter( ( elem: any ) => elem['url_infos']['desc'] === 'ok' ).length,
-                        value: 'ok'
-                    },
-                    {
-                        label: 'Redirects',
-                        number: data['template_info'].filter( ( elem: any ) => elem['url_infos']['desc'] === 'redirect' ).length,
-                        value: 'redirect'
-                    },
-                    {
-                        label: 'Potentially spammy link',
-                        number: data['template_info'].filter( ( elem: any ) => elem['url_infos']['desc'] === 'spammy' ).length,
-                        value: 'spammy'
-                    },
-                    {
-                        label: 'Links that could be down',
-                        number: data['template_info'].filter( ( elem: any ) => elem['url_infos']['desc'] === 'down' ).length,
-                        value: 'down'
-                    },
-                    {
-                        label: 'Links that are dead',
-                        number: data['template_info'].filter( ( elem: any ) => elem['url_infos']['desc'] === 'dead' ).length,
-                        value: 'dead'
-                    }
-                ];
+        } ).catch( () => {
+            showResults.value = true;
+            erroredOut.value = true;
         } )
 
         function onClickButtonGroup( value: string ) {
+            currentlySelectedTab.value = value;
             if ( value === 'all' ) {
                 actualData.value = fetchedData;
-                currentlySelectedTab.value = value;
+                return;
+            }
+
+            if ( value === 'archive' ) {
+                actualData.value = fetchedData.filter( ( elem: any ) => elem['archive_url'] )
+                return;
+            }
+
+            if ( value === 'notarchive' ) {
+                actualData.value = fetchedData.filter( ( elem: any ) => !elem['archive_url'] )
                 return;
             }
 
             actualData.value = fetchedData.filter( ( elem: any ) => elem['url_infos']['desc'] === value )
-
-            currentlySelectedTab.value = value;
         }
 
         return {
@@ -148,7 +140,8 @@ export default defineComponent({
             fetchedData,
             actualData,
             buttons,
-            success,
+            notSuccess,
+            erroredOut,
             totalCount,
             onClickButtonGroup,
             currentlySelectedTab
