@@ -29,10 +29,17 @@ def get_url_status_info( url: str ) -> dict:
             "description": 'Other error'
         }
     history = []
-    for res in resp.history:
+    for i in range( 1, len( resp.history ) ):
+        res = resp.history[i-1]
         history.append( {
             "url": res.url,
             "status": res.status_code
+        } )
+
+    if len( resp.history ) == 1:
+        history.append( {
+            "url": resp.history[0].url,
+            "status": resp.status_code
         } )
     
     if len( history ) > 0:
@@ -41,7 +48,7 @@ def get_url_status_info( url: str ) -> dict:
     status_code = history[0]['status'] if len( history ) > 0 and resp.status_code == 200  else resp.status_code
     return {
         "status": status_code,
-        "url": history[0]['url'] if len( history ) > 0  else resp.url,
+        "url": url,
         "history": history
     }
 
