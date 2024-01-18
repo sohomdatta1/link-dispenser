@@ -7,7 +7,7 @@ import datetime
 from linkcheck import analyze_url
 
 def get_article_text( article_name, lang='en'):
-    resp = r.get(f'https://{lang}.wikipedia.org/wiki/{article_name}?action=raw', timeout= 5)
+    resp = r.get(f'https://{lang}.wikipedia.org/wiki/{article_name}?action=raw', timeout= 10)
 
     if resp.status_code != 200:
         return {

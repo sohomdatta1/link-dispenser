@@ -13,12 +13,18 @@ ia_useragent = 'Wikimedia_Link_Dispenser/1.0'
 
 def get_url_status_info( url: str ) -> dict:
     try:
-        resp = r.get(url, headers=headers, timeout= 5)
+        resp = r.get(url, headers=headers, timeout= 60)
     except r.exceptions.ConnectionError as _:
         return {
             "status": 1337,
             "history": [],
             "description": 'ConnectionError'
+        }
+    except Exception as _:
+        return {
+            "status": 1337,
+            "history": [],
+            "description": 'Other error'
         }
     history = []
     for res in resp.history:
