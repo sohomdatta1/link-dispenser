@@ -11,24 +11,36 @@ headers = json.load(open('headers.json', encoding='utf-8'))
 ia_useragent = 'Wikimedia_Link_Dispenser/1.0'
 
 
-def get_url_status_info( url: str ) -> dict:
+def get_url_status_info( url: str, verify=True ) -> dict:
     headers['host'] = parse_url( url ).netloc
     try:
-        resp = r.get(url, headers=headers, timeout= 60)
+        s = r.Session()
+        resp = s.get(url, headers=headers, timeout= 60, verify=verify, stream=True)
+    except r.exceptions.TooManyRedirects as exc:
+        resp = exc.response
     except r.exceptions.ConnectionError as _:
-        return {
-            "status": 1337,
-            "url": url,
-            "history": [],
-            "description": 'ConnectionError'
-        }
+        print(url, _)
+        if verify:
+            # Our certificates might be out of date, doesn't matter
+            # we will try once more this time with verification
+            # disabled.
+            return get_url_status_info( url, verify=False )
+        else:
+            return {
+                "status": 1337,
+                "url": url,
+                "history": [],
+                "description": 'ConnectionError'
+            }
     except Exception as _:
+        print(url, _)
         return {
             "status": 1337,
             "url": url,
             "history": [],
             "description": 'Other error'
         }
+    resp.close()
     history = []
     for i in range( 1, len( resp.history ) ):
         res = resp.history[i-1]
@@ -46,7 +58,7 @@ def get_url_status_info( url: str ) -> dict:
     if len( history ) > 0:
         history[ len(history) - 1 ]['url'] = resp.url
 
-    status_code = history[0]['status'] if len( history ) > 0 and resp.status_code == 200  else resp.status_code
+    status_code = history[0]['status'] if len( history ) > 0 and resp.status_code == 200 else resp.status_code
     return {
         "status": status_code,
         "url": url,
@@ -124,7 +136,7 @@ def analyze_url( url: str, timestamp: str ) -> dict:
     json_data = get_url_status_info(url)
     json_data['spammy'] = could_be_spammy(json_data)
     json_data['uid'] = uuid4()
-    if json_data['status'] == 200 and not json_data['spammy']:
+    if (json_data['status'] >= 200 and json_data['status'] <= 299 ) and not json_data['spammy']:
         json_data['desc'] = 'ok'
     elif json_data['status'] > 399 and json_data['status'] != 1337:
         json_data['desc'] = 'down'
