@@ -17,12 +17,14 @@ def get_url_status_info( url: str ) -> dict:
     except r.exceptions.ConnectionError as _:
         return {
             "status": 1337,
+            "url": url,
             "history": [],
             "description": 'ConnectionError'
         }
     except Exception as _:
         return {
             "status": 1337,
+            "url": url,
             "history": [],
             "description": 'Other error'
         }
