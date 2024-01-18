@@ -1,117 +1,157 @@
 <template>
-    <cdx-typeahead-search
-		id="typeahead-search-pending-state"
-		form-action="/analyze"
-		button-label="Analyze"
-		search-results-label="Search results"
-		:search-results="searchResults"
-		:search-footer-url="searchFooterUrl"
-		:show-thumbnail="true"
-		:highlight-query="true"
-		:auto-expand-width="true"
-		placeholder="Analyze a specific page"
-		@input="onInput"
-		@submit="onSubmit"
-		@search-result-click="onSearchClick"
-	>
-		<template #default>
-			<input
-				type="hidden"
-				name="language"
-				value="en"
-			>
-			<input
-				type="hidden"
-				name="title"
-				value="Analyze page"
-			>
+	<cdx-field>
+		<cdx-lookup
+			v-model:selected="selection"
+			:menu-items="menuItems"
+			:menu-config="menuConfig"
+			@input="onInput"
+			@load-more="onLoadMore"
+			@update:selected="onAnalyzeSelected"
+		>
+			<template #no-results>
+				No results found.
+			</template>
+		</cdx-lookup>
+		<template #label>
+			Select a page to analyze
 		</template>
-		<template #search-results-pending>
-			Loading potential article results...
+		<template #help-text>
+			Start typing the name of a English Wikipedia article to analyze
 		</template>
-	</cdx-typeahead-search>
+	</cdx-field>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { CdxTypeaheadSearch } from '@wikimedia/codex';
+import { CdxLookup, CdxField } from '@wikimedia/codex';
 
 export default defineComponent( {
-	name: 'TypeaheadSearchPendingState',
-	components: { CdxTypeaheadSearch },
+	name: 'ArticleLookup',
+	components: { CdxLookup, CdxField },
 	setup() {
-		const searchResults: Ref<any[]> = ref( [] );
-		const searchFooterUrl = ref( '' );
+		const selection: Ref<any> = ref( null );
+		const menuItems: Ref<any[]> = ref( [] );
 		const currentSearchTerm = ref( '' );
 
 		/**
-		 * Format search results for consumption by TypeaheadSearch.
+		 * Get search results.
 		 *
-		 * @param pages
-		 * @return
+		 * @param {string} searchTerm
+		 * @param {number} offset Optional result offset
+		 *
+		 * @return {Promise}
 		 */
-		function adaptApiResponse( pages: Array<any> ) {
-			return pages.map( ( { id, title, description, thumbnail } ) => ( {
-				label: title,
-				value: id,
-				description: description,
-				thumbnail: thumbnail ? {
-					url: thumbnail.url,
-					width: thumbnail.width,
-					height: thumbnail.height
-				} : undefined
-			} ) );
+		function fetchResults( searchTerm: string ) {
+			const params = new URLSearchParams( {
+				"action": "query",
+				"format": "json",
+				"list": "search",
+				"utf8": "1",
+				"formatversion": "2",
+				"srsearch": `intitle: ${searchTerm}`,
+				"srinfo": "",
+				"srprop": "",
+				"origin": "*"
+			} );
+
+			return fetch( `https://en.wikipedia.org/w/api.php?${ params.toString() }` )
+				.then( ( response ) => response.json() );
 		}
 
+		/**
+		 * Handle lookup input.
+		 *
+		 * TODO: this should be debounced.
+		 *
+		 * @param {string} value
+		 */
 		function onInput( value: string ) {
 			// Internally track the current search term.
 			currentSearchTerm.value = value;
 
-			// Unset search results and the search footer URL if there is no value.
-			if ( !value || value === '' ) {
-				searchResults.value = [];
-				searchFooterUrl.value = '';
+			// Do nothing if we have no input.
+			if ( !value ) {
+				menuItems.value = [];
 				return;
 			}
 
-			fetch(
-				`https://en.wikipedia.org/w/rest.php/v1/search/title?q=${ encodeURIComponent( value ) }&limit=10`
-			).then( ( resp ) => resp.json() )
-				.then( ( data: any ) => {
+			fetchResults( value )
+				.then( ( data ) => {
 					// Make sure this data is still relevant first.
-					if ( currentSearchTerm.value === value ) {
-						// If there are results, format them into an array of
-						// SearchResults to be passed into TypeaheadSearch for
-						// display as a menu of suggestions.
-						searchResults.value = data.pages && data.pages.length > 0 ?
-							adaptApiResponse( data.pages ) :
-							[];
-
-						// Set the search footer URL to a link to the search
-						// page for the current search query.
-						searchFooterUrl.value = `https://en.wikipedia.org/w/index.php?title=Special%3ASearch&fulltext=1&search=${ encodeURIComponent( value ) }`;
-
+					if ( currentSearchTerm.value !== value ) {
+						return;
 					}
-				} ).catch( () => {
-					// On error, reset search results and search footer URL.
-					searchResults.value = [];
-					searchFooterUrl.value = '';
+
+					// Reset the menu items if there are no results.
+					if ( !data.query.search || data.query.search.length === 0 ) {
+						menuItems.value = [];
+						return;
+					}
+
+					// Build an array of menu items.
+					const results = data.query.search.map( ( result: any ) => {
+						return {
+							label: result.title,
+							value: result.title
+						};
+					} );
+
+					// Update menuItems.
+					menuItems.value = results;
+				} )
+				.catch( () => {
+					// On error, set results to empty.
+					menuItems.value = [];
 				} );
 		}
-		function onSubmit () {
-			document.location.href = `/analyze/${currentSearchTerm.value}`
+
+		function deduplicateResults( results: any[] ) {
+			const seen = new Set( menuItems.value.map( ( result ) => result.value ) );
+			return results.filter( ( result ) => !seen.has( result.value ) );
 		}
 
-		function onSearchClick() {
-			document.location.href = `/analyze/${currentSearchTerm.value}`
+		function onLoadMore() {
+			if ( !currentSearchTerm.value ) {
+				return;
+			}
+
+			fetchResults( currentSearchTerm.value )
+				.then( ( data ) => {
+					if ( !data.search || data.search.length === 0 ) {
+						return;
+					}
+
+					const results = data.search.map( ( result: any ) => {
+						return {
+							label: result.label,
+							value: result.id,
+							description: result.description
+						};
+					} );
+
+					// Update menuItems.
+					const deduplicatedResults = deduplicateResults( results );
+					menuItems.value.push( ...deduplicatedResults );
+				} );
 		}
+
+		function onAnalyzeSelected( selected: string ) {
+			if ( selected !== null ) {
+				document.location.href = `/analyze/${selected}`
+			}
+		}
+
+		const menuConfig = {
+			visibleItemLimit: 6
+		};
 
 		return {
-			searchResults,
-			searchFooterUrl,
+			selection,
+			menuItems,
+			menuConfig,
+			onAnalyzeSelected,
 			onInput,
-			onSubmit,
-			onSearchClick
+			onLoadMore
 		};
 	}
 } );
