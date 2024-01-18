@@ -11,7 +11,7 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/analyze/:articleName',
+      path: '/analyze/:articleName(.*)',
       name: 'analyze',
       component: AnalyzedResultsView
     },

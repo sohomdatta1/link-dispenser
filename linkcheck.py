@@ -18,7 +18,7 @@ def get_url_status_info( url: str ) -> dict:
         return {
             "status": 1337,
             "history": [],
-            "description": _
+            "description": 'ConnectionError'
         }
     history = []
     for res in resp.history:
@@ -110,12 +110,12 @@ def analyze_url( url: str, timestamp: str ) -> dict:
     json_data['uid'] = uuid4()
     if json_data['status'] == 200 and not json_data['spammy']:
         json_data['desc'] = 'ok'
+    elif json_data['status'] > 399 and json_data['status'] != 1337:
+        json_data['desc'] = 'down'
     elif ( ( json_data['status'] > 300 and json_data['status'] < 399) or len( json_data['history'] ) != 0 ) and not json_data['spammy']:
         json_data['desc'] = 'redirect'
     elif json_data['spammy']:
         json_data['desc'] = 'spammy'
-    elif json_data['status'] > 399 and json_data['status'] != 1337:
-        json_data['desc'] = 'down'
     else:
         json_data['desc'] = 'dead'
     json_data['ok'] = json_data['status'] == 200 or json_data['spammy']
