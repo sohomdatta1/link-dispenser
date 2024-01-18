@@ -72,7 +72,7 @@ export default defineComponent({
                 value: 'redirect'
             },
             {
-                label: 'Potentially sammy links',
+                label: 'Potentially spammy links',
                 number: 0,
                 value: 'spammy'
             },
