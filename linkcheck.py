@@ -12,7 +12,6 @@ ia_useragent = 'Wikimedia_Link_Dispenser/1.0'
 
 
 def get_url_status_info( url: str, verify=True ) -> dict:
-    headers['host'] = parse_url( url ).netloc
     try:
         s = r.Session()
         resp = s.get(url, headers=headers, timeout= 60, verify=verify, stream=True)
@@ -158,3 +157,5 @@ def analyze_url( url: str, timestamp: str ) -> dict:
             "status": 0
         }
     return json_data
+
+print(analyze_url('https://www.cnn.com/2020/05/29/us/cnn-center-vandalized-protest-atlanta-destroyed/index.html', '1'))
