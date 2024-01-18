@@ -13,7 +13,7 @@ ia_useragent = 'Wikimedia_Link_Dispenser/1.0'
 
 def get_url_status_info( url: str ) -> dict:
     try:
-        resp = r.get(url, headers=headers, timeout= 5 * 1000)
+        resp = r.get(url, headers=headers, timeout= 5)
     except r.exceptions.ConnectionError as _:
         return {
             "status": 1337,
