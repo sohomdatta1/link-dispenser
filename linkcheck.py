@@ -5,16 +5,19 @@ from socket import getaddrinfo, gaierror
 from waybackpy import WaybackMachineCDXServerAPI, WaybackMachineSaveAPI, exceptions as wbpye
 from dateutil import parser as date_parser
 from uuid import uuid4
+import re
 
 
 headers = json.load(open('headers.json', encoding='utf-8'))
+blocked_list = json.load(open('blocked.json', encoding='utf-8'))
 ia_useragent = 'Wikimedia_Link_Dispenser/1.0'
 
 
 def get_url_status_info( url: str, verify=True ) -> dict:
+    timeout = False
     try:
         s = r.Session()
-        resp = s.get(url, headers=headers, timeout= 60, verify=verify, stream=True)
+        resp = s.get(url, headers=headers, timeout= 60 * 10, verify=verify, stream=True)
     except r.exceptions.TooManyRedirects as exc:
         resp = exc.response
     except r.exceptions.ConnectionError as _:
@@ -24,19 +27,28 @@ def get_url_status_info( url: str, verify=True ) -> dict:
             # we will try once more this time with verification
             # disabled.
             return get_url_status_info( url, verify=False )
-        else:
-            return {
-                "status": 1337,
-                "url": url,
-                "history": [],
-                "description": 'ConnectionError'
-            }
+        return {
+            "status": 1337,
+            "url": url,
+            "timeout": False,
+            "history": [],
+            "description": 'ConnectionError'
+        }
+    except r.exceptions.Timeout as _:
+        return {
+            "status": 1337,
+            "url": url,
+            "history": [],
+            "timeout": True,
+            "description": 'Other error'
+        }
     except Exception as _:
         print(url, _)
         return {
             "status": 1337,
             "url": url,
             "history": [],
+            "timeout": False,
             "description": 'Other error'
         }
     resp.close()
@@ -61,6 +73,7 @@ def get_url_status_info( url: str, verify=True ) -> dict:
     return {
         "status": status_code,
         "url": url,
+        "blocked": could_be_blocked( url, resp ),
         "history": history
     }
 
@@ -128,14 +141,19 @@ def could_be_spammy( url_resp: dict ):
             return True
     return False
 
+def could_be_blocked(url, resp) -> bool:
+    for url_regex in blocked_list:
+        if ( re.match( url_regex, url ) ):
+            return True
+    if resp.status_code == 403 and 'CF-RAY' in resp.headers:
+        return True
+    return False
 
-
-def analyze_url( url: str, timestamp: str ) -> dict:
-    #tm = date_parser.parse(timestamp)
+def analyze_url( url: str ) -> dict:
     json_data = get_url_status_info(url)
     json_data['spammy'] = could_be_spammy(json_data)
     json_data['uid'] = uuid4()
-    if (json_data['status'] >= 200 and json_data['status'] <= 299 ) and not json_data['spammy']:
+    if (json_data['status'] >= 200 and json_data['status'] <= 299) and not json_data['spammy']:
         json_data['desc'] = 'ok'
     elif json_data['status'] > 399 and json_data['status'] != 1337:
         json_data['desc'] = 'down'
@@ -144,10 +162,12 @@ def analyze_url( url: str, timestamp: str ) -> dict:
     elif json_data['spammy']:
         json_data['desc'] = 'spammy'
     else:
-        json_data['desc'] = 'dead'
+        json_data['desc'] = 'down'
     json_data['ok'] = json_data['status'] == 200 or json_data['spammy']
     if json_data['status'] > 399 or json_data['spammy']:
         json_data['dns'] = bool( get_dns_info(url)['status'] )
+        if not json_data['dns']:
+            json_data['desc'] = 'dead'
         json_data['archives'] = {
             "status": 0
         }
@@ -157,5 +177,3 @@ def analyze_url( url: str, timestamp: str ) -> dict:
             "status": 0
         }
     return json_data
-
-print(analyze_url('https://www.cnn.com/2020/05/29/us/cnn-center-vandalized-protest-atlanta-destroyed/index.html', '1'))

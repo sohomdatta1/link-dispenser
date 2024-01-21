@@ -4,13 +4,13 @@
 			{{ $props.data && $props.data['title'] }} 
             <cdx-info-chip v-if="$props.data['url_infos'][ 'desc' ] !== 'ok'">
                 Detected issue: URL might be {{ $props.data['url_infos'][ 'desc' ]  }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['publication_date' ]">
                 Published on: {{ $props.data['publication_date' ] }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['access-date' ]">
                 Retrieved on: {{ $props.data['access-date' ] }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['archive_url']">
                 <a :href="$props.data['archive_url']" target="_blank" class="link-general-chip">Already has archive.org link</a>
             </cdx-info-chip>
@@ -30,13 +30,13 @@
 			{{ $props.data && $props.data['title'] }}
             <cdx-info-chip v-if="$props.data['url_infos'][ 'desc' ] !== 'ok'">
                 Detected issue: URL might be {{ $props.data['url_infos'][ 'desc' ] }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['publication_date' ]">
                 Published on: {{ $props.data['publication_date' ] }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['access-date' ]">
                 Retrieved on: {{ $props.data['access-date' ] }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['archive_url']">
                 <a :href="$props.data['archive_url']" target="_blank" class="link-general-chip">Already has archive.org link</a>
             </cdx-info-chip>
@@ -62,13 +62,13 @@
 			{{ $props.data && $props.data['title'] }}
             <cdx-info-chip v-if="$props.data['url_infos'][ 'desc' ] !== 'ok'">
                 Detected issue: URL might be {{ $props.data['url_infos'][ 'desc' ]  }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['publication_date' ]">
                 Published on: {{ $props.data['publication_date' ] }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['access-date' ]">
                 Retrieved on: {{ $props.data['access-date' ] }}
-            </cdx-info-chip>&nbsp;
+            </cdx-info-chip>
             <cdx-info-chip v-if="$props.data['archive_url']">
                 <a :href="$props.data['archive_url']" target="_blank" class="link-general-chip">
                     Already has archive.org link
@@ -84,6 +84,15 @@
             <br>
             <cdx-info-chip status="notice" v-if="$props.data['url_infos']['status'] !== 1337">
                 Status code: {{ $props.data['url_infos'][ 'status' ] }}
+            </cdx-info-chip>
+            <cdx-info-chip status="notice" v-if="$props.data['url_infos']['timeout']">
+            Request timed out
+            </cdx-info-chip>
+            <cdx-info-chip status="notice" v-if="$props.data['url_infos']['blocked']">
+            Status might be incorrect
+            </cdx-info-chip>
+            <cdx-info-chip status="notice" v-if="$props.data['url_infos']['blocked']">
+            Requests are blocked by website owner
             </cdx-info-chip>
 		</template>
     </cdx-card>
@@ -145,5 +154,8 @@ export default defineComponent({
 
 .link-general-chip {
     color: inherit;
+}
+.cdx-info-chip {
+    margin-left: 5px;
 }
 </style>

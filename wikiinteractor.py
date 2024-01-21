@@ -73,6 +73,6 @@ def analyze_article( name: str ):
         article['template_info'] = json_data
         for data in json_data:
             access_date = data['access-date'] or str( datetime.datetime.utcnow().strftime( '%d-%m-%Y' ) )
-            data['url_infos'] = analyze_url(data['url'], access_date)
+            data['url_infos'] = analyze_url(data['url'])
         return article
     return article

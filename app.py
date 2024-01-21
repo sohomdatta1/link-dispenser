@@ -24,9 +24,9 @@ app.config.from_mapping(config)
 cache = Cache(app)
 
 @app.route("/api/lookup_url/<url>/<timestamp>")
-@cache.cached(timeout=1800)
-def lookup_url( url: str, timestamp: str ):
-    return analyze_url(url, timestamp)
+@cache.cached(timeout=1800, query_string=True)
+def lookup_url( url: str ):
+    return analyze_url(url)
 
 @app.route("/api/analyze/<path:article_name>")
 @cache.cached(timeout=1800, query_string=True)
@@ -35,17 +35,21 @@ def analyze( article_name: str ):
 
 @app.route("/")
 def index():
-    return send_file('./client/dist/index.html')
+    r = send_file('./client/dist/index.html')
+    r.headers['Cache-Control'] = 'max-age=604800'
+    return r
 
 @app.route("/<path:filename>")
 def serve_other_files( filename: str ):
-    print(filename)
-    return send_from_directory('./client/dist', filename )
+    r = send_from_directory('./client/dist', filename )
+    r.headers['Cache-Control'] = 'max-age=604800'
+    return r
 
 @app.errorhandler(404)
 def page_not_found(e):
-    print(request.path)
-    return send_file('./client/dist/index.html')
+    r = send_file('./client/dist/index.html')
+    r.headers['Cache-Control'] = 'max-age=604800'
+    return r
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=1238)

@@ -82,7 +82,7 @@ export default defineComponent({
                 value: 'down'
             },
             {
-                label: 'Links that are dead',
+                label: 'Links that could be dead',
                 number: 0,
                 value: 'dead'
             },
