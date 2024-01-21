@@ -1,6 +1,6 @@
 [
     ".*\\.?archive\\.org",
-    ".*\\.?si\\.org",
-    ".*\\.doi.org",
-    ".*\\.acm.org"
+    ".*\\.?si\\.com",
+    ".*\\.?doi\\.org",
+    ".*\\.?acm\\.org"
 ]
