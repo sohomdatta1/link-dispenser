@@ -1,20 +1,24 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
-import Header from './components/Header.vue'
+import Header from './components/HeaderComponent.vue'
 </script>
 
 <template>
   <header>
 
-    <div class="wrapper">
-      <Header />
-    </div>
+    <Header />
 
   </header>
 
-  <RouterView />
+  <div class="wrapper">
+    <RouterView />
+  </div>
 </template>
 
-<style scoped>
+<style lang="less" scoped>
+@import '@wikimedia/codex-design-tokens/theme-wikimedia-ui.less';
 
+.wrapper {
+  padding: @spacing-100;
+  padding-top: @spacing-0;
+}
 </style>

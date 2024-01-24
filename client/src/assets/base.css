@@ -1,3 +1,11 @@
+@import '@wikimedia/codex/dist/codex.style.css';
+
 :root {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html,
+body {
+    margin: 0px;
+    padding: 0px;
 }

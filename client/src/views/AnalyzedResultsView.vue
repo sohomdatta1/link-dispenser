@@ -9,7 +9,7 @@
     <div v-if="showResults && erroredOut" class="maho-text-wrapper">
         Something definitely went wrong here. Please report this URL to [[en:User talk:Sohom_Datta]] or sohom_#0 on Discord.
     </div>
-    <template v-if="showResults && !notSuccess">
+    <template v-if="!notSuccess">
         <div class="floating-header">
             <div>
                 <h1>Results for <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a></h1>
@@ -49,11 +49,13 @@ export default defineComponent({
     setup() {
         const showResults = ref( false );
         const notSuccess = ref( false );
+        let totalCitationCount = 0;
         let fetchedData: any[] = [];
         const actualData: Ref<any[]> = ref( [] );
         const erroredOut = ref( false );
         const totalCount = ref( 0 );
         const currentlySelectedTab = ref( 'all' );
+        let selectedTabName = 'all';
         const route = useRoute();
         let buttons = ref([
             {
@@ -97,25 +99,47 @@ export default defineComponent({
         ]);
         const pagename = route.params.articleName;
         const nocache = new URL( location.href ).searchParams.get( 'nocache' );
-        fetch( `/api/analyze/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? Math.random() : 'yes' }` )
-            .then( response => response.json() )
-            .then( ( data: any ) => {
-                if ( !data['exists'] ) {
-                    showResults.value = true;
-                    notSuccess.value = true;
-                    return;
-                }
-                document.title = `Results for ${pagename}`
-                fetchedData = data['template_info']
-                actualData.value = fetchedData;
+
+
+        async function initData() {
+            const resp = await fetch( `/api/push_analysis/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? Math.random() : 'yes' }` )
+            const json = await resp.json();
+            if ( !json['exists'] ) {
                 showResults.value = true;
-                totalCount.value = fetchedData.length;
-        } ).catch( () => {
+                notSuccess.value = true;
+                return;
+            }
+            const runid = json['rid'];
+            totalCitationCount = json['count'];
+            await fetchData( runid );
+        }
+
+        async function fetchData( runid: string ) {
+            const resp = await fetch( `/api/fetch_analysis/${runid}` );
+            const json = await resp.json();
+            if ( totalCitationCount > json.length ) {
+                console.log( totalCitationCount, json.length )
+                setTimeout( () => { 
+                    fetchData( runid ).catch( () => {
+                        showResults.value = true;
+                        erroredOut.value = true;
+                    } )
+                }, 1000 );
+            } else {
+                showResults.value = true;
+            }
+            fetchedData = json;
+            totalCount.value = fetchData.length;
+            onClickButtonGroup( selectedTabName );
+        }
+
+        initData().catch( () => {
             showResults.value = true;
             erroredOut.value = true;
-        } )
+        } );
 
         function onClickButtonGroup( value: string ) {
+            selectedTabName = value;
             currentlySelectedTab.value = value;
             if ( value === 'all' ) {
                 actualData.value = fetchedData;
@@ -132,7 +156,7 @@ export default defineComponent({
                 return;
             }
 
-            actualData.value = fetchedData.filter( ( elem: any ) => elem['url_infos']['desc'] === value )
+            actualData.value = fetchedData.filter( ( elem: any ) => elem['url_info']['desc'] === value )
         }
 
         return {
@@ -160,6 +184,10 @@ export default defineComponent({
     font-family: monospace;
     justify-content: center;
     align-items: center;
+}
+
+.wrapper {
+    padding-top: 0;
 }
 
 .cdx-docs-link {

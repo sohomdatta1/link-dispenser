@@ -1,5 +1,5 @@
 <template>
-	<cdx-field>
+	<cdx-field class="field">
 		<cdx-lookup
 			v-model:selected="selection"
 			:menu-items="menuItems"
@@ -156,3 +156,9 @@ export default defineComponent( {
 	}
 } );
 </script>
+<style lang='less' scoped>
+@import '@wikimedia/codex-design-tokens/theme-wikimedia-ui.less';
+.field {
+	padding-top: @spacing-100;
+}
+</style>
