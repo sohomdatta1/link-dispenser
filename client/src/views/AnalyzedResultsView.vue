@@ -129,7 +129,7 @@ export default defineComponent({
                 showResults.value = true;
             }
             fetchedData = json;
-            totalCount.value = fetchData.length;
+            totalCount.value = json.length;
             onClickButtonGroup( selectedTabName );
         }
 

@@ -5,8 +5,11 @@ from linkcheck import analyze_url
 from wikiinteractor import analyze_article
 import json
 from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import get_context
 
-exec_pool = ProcessPoolExecutor(max_workers=1000)
+mp = get_context('spawn')
+
+exec_pool = ProcessPoolExecutor(max_workers=1000, mp_context=mp)
 
 
 def async_main(json_data: dict, num: int, rid: UUID) -> None:
