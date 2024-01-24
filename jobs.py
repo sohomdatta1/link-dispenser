@@ -9,6 +9,8 @@ from multiprocessing import get_context
 
 mp = get_context('spawn')
 
+exec_pool = ProcessPoolExecutor(max_workers=3, mp_context=mp)
+
 
 def async_main(json_data: dict, num: int, rid: UUID) -> None:
     url = json_data['url']
@@ -22,7 +24,6 @@ def push_analysis(article_name: str):
     article_data = analyze_article(article_name)
     citation_data = article_data['template_info']
     count = 0
-    exec_pool = ProcessPoolExecutor(max_workers=20, mp_context=mp)
     futures_list = []
     for citation in citation_data:
         count += 1
