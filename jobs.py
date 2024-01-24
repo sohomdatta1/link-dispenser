@@ -9,7 +9,7 @@ from multiprocessing import get_context
 
 mp = get_context('spawn')
 
-exec_pool = ProcessPoolExecutor(max_workers=500, mp_context=mp)
+exec_pool = ProcessPoolExecutor(max_workers=100, mp_context=mp)
 
 
 def async_main(json_data: dict, num: int, rid: UUID) -> None:
