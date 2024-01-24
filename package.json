@@ -1,0 +1,12 @@
+{
+  "name": "link-dispenser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "postinstall": "cd client && npm install --legacy-peer-deps",
+    "build": "cd client && npm run build"
+  },
+  "author": "",
+  "license": "ISC"
+}
