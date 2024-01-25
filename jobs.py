@@ -4,13 +4,15 @@ from datetime import timedelta
 from linkcheck import analyze_url
 from wikiinteractor import analyze_article
 import json
-from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import get_context
+import os
+from concurrent.futures import ThreadPoolExecutor
 
-mp = get_context('spawn')
+if 'MAX_WORKER' in os.environ:
+    max_workers = int( os.environ['MAX_WORKER'] )
+else:
+    max_workers = 5
 
-exec_pool = ProcessPoolExecutor(max_workers=3, mp_context=mp)
-
+exec_pool = ThreadPoolExecutor(max_workers=max_workers)
 
 def async_main(json_data: dict, num: int, rid: UUID) -> None:
     url = json_data['url']
