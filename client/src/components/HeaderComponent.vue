@@ -4,8 +4,8 @@
             <cdx-icon :icon="cdxIconLink"></cdx-icon>
             link-dispenser
         </router-link>
-        <a class="right less-link-padding" href="https://gitlab.wikimedia.org/toolforge-repos/link-dispenser" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/3/35/GitLab_icon.svg" class="gitlab-img" /></a>
-        <a class="right" href="https://en.wikipedia.org/wiki/User_talk:Sohom_Datta" target="_blank">Report a bug</a>
+        <a class="right less-link-padding" href="https://gitlab.wikimedia.org/toolforge-repos/link-dispenser" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/3/35/GitLab_icon.svg" class="right-icon-img" /></a>
+        <a class="right less-link-padding" href="https://phabricator.wikimedia.org/maniphest/task/edit/form/43/?projects=Tool-link-dispenser&subscribers=Soda" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/1/10/Ic_bug_report_48px.svg" class="right-icon-img"></a>
     </nav>
 </template>
 
@@ -34,7 +34,7 @@ export default defineComponent({
   overflow: hidden;
   font-family: @font-family-monospace;
 
-  .gitlab-img {
+  .right-icon-img {
     width: @size-150;
     height: @size-150;
   }

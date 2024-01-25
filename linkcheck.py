@@ -166,19 +166,25 @@ def analyze_url(url: str) -> dict:
     if (json_data['status'] >= 200 and json_data['status']
             <= 299) and not json_data['spammy']:
         json_data['desc'] = 'ok'
+        json_data['priority'] = 4
     elif json_data['status'] > 399 and json_data['status'] != 1337:
         json_data['desc'] = 'down'
+        json_data['priority'] = 1
     elif ((json_data['status'] > 300 and json_data['status'] < 399) or len(json_data['history']) != 0) and not json_data['spammy']:
         json_data['desc'] = 'redirect'
+        json_data['priority'] = 3
     elif json_data['spammy']:
         json_data['desc'] = 'spammy'
+        json_data['priority'] = 2
     else:
         json_data['desc'] = 'down'
+        json_data['priority'] = 1
     json_data['ok'] = json_data['status'] == 200 or json_data['spammy']
     if json_data['status'] > 399 or json_data['spammy']:
         json_data['dns'] = bool(get_dns_info(url)['status'])
         if not json_data['dns']:
             json_data['desc'] = 'dead'
+            json_data['priority'] = 0
         json_data['archives'] = {
             "status": 0
         }

@@ -1,7 +1,7 @@
 <template>
     <cdx-progress-bar aria--label="Analyzing" v-if="!showResults" inline />
     <div v-if="!showResults" class="maho-text-wrapper">
-        <div>Analyzing <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a>, this might take a while..... I'd suggest grabbing a cup of coffee, taking a walk or doing some other activity</div>
+        <div>Analyzing <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a>, this might take a while..... I'd suggest grabbing a cup of coffee, taking a walk or doing some other activity. ({{ totalCount }}/{{ totalCitationCountRef }} URLs processed)</div>
     </div>
     <div v-if="showResults && notSuccess" class="maho-text-wrapper">
         This article does not exist.
@@ -9,32 +9,34 @@
     <div v-if="showResults && erroredOut" class="maho-text-wrapper">
         Something definitely went wrong here. Please report this URL to [[en:User talk:Sohom_Datta]] or sohom_#0 on Discord.
     </div>
-    <template v-if="!notSuccess">
-        <div class="floating-header">
-            <div>
-                <h1>Results for <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a></h1>
+    <template v-if="!notSuccess && !erroredOut">
+        <div>
+            <div class="floating-header">
+                <div>
+                    <h1>Results for <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a></h1>
+                </div>
+                <cdx-toggle-button-group
+                :model-value="currentlySelectedTab"
+                :buttons="buttons"
+                @update:modelValue="onClickButtonGroup"
+            >
+                </cdx-toggle-button-group>
+                <br>
+                <div v-if="actualData.length !== 0 && currentlySelectedTab !== 'all'">
+                    <div>{{ actualData.length }} out of {{ totalCount }} URLs in the article that meet this criteria.</div>
+                </div>
+                <div v-if="currentlySelectedTab === 'all'">
+                    <div>{{ totalCount }} URLs detected in the article.</div>
+                </div>
+                <div v-if="actualData.length === 0">
+                    <div>No URLs in the article that meet this criteria.</div>
+                </div>
             </div>
-            <cdx-toggle-button-group
-            :model-value="currentlySelectedTab"
-            :buttons="buttons"
-            @update:modelValue="onClickButtonGroup"
-        >
-            </cdx-toggle-button-group>
             <br>
-            <div v-if="actualData.length !== 0 && currentlySelectedTab !== 'all'">
-                <div>{{ actualData.length }} out of {{ totalCount }} URLs in the article that meet this criteria.</div>
-            </div>
-            <div v-if="currentlySelectedTab === 'all'">
-                <div>{{ totalCount }} URLs detected in the article.</div>
-            </div>
-            <div v-if="actualData.length === 0">
-                <div>No URLs in the article that meet this criteria.</div>
-            </div>
+            <template v-for="data in actualData" :key="data.uid">
+                <citation-card v-bind:data="data"></citation-card>
+            </template>
         </div>
-        <br>
-        <template v-for="data in actualData" :key="data.uid">
-            <citation-card v-bind:data="data"></citation-card>
-        </template>
     </template>
 </template>
 <script lang="ts">
@@ -50,6 +52,7 @@ export default defineComponent({
         const showResults = ref( false );
         const notSuccess = ref( false );
         let totalCitationCount = 0;
+        let totalCitationCountRef = ref( 0 );
         let fetchedData: any[] = [];
         const actualData: Ref<any[]> = ref( [] );
         const erroredOut = ref( false );
@@ -99,10 +102,10 @@ export default defineComponent({
         ]);
         const pagename = route.params.articleName;
         const nocache = new URL( location.href ).searchParams.get( 'nocache' );
-
+        const recache = new URL( location.href ).searchParams.get( 'recache' );
 
         async function initData() {
-            const resp = await fetch( `/api/push_analysis/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? Math.random() : 'yes' }` )
+            const resp = await fetch( `/api/push_analysis/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? recache || Math.random() : 'yes' }` )
             const json = await resp.json();
             if ( !json['exists'] ) {
                 showResults.value = true;
@@ -111,8 +114,16 @@ export default defineComponent({
             }
             const runid = json['rid'];
             totalCitationCount = json['count'];
+            totalCitationCountRef.value = totalCitationCount;
             await fetchData( runid );
         }
+
+        setTimeout( () => {
+            if ( fetchData.length === 0 ) {
+                erroredOut.value = true;
+                notSuccess.value = true;
+            }
+        }, 5 * 61 * 1000 )
 
         async function fetchData( runid: string ) {
             const resp = await fetch( `/api/fetch_analysis/${runid}` );
@@ -124,10 +135,11 @@ export default defineComponent({
                         showResults.value = true;
                         erroredOut.value = true;
                     } )
-                }, 1000 );
+                }, 2 * 1000 );
             } else {
                 showResults.value = true;
             }
+            document.title = `Results for ${ pagename }`
             fetchedData = json;
             totalCount.value = json.length;
             onClickButtonGroup( selectedTabName );
@@ -166,6 +178,7 @@ export default defineComponent({
             buttons,
             notSuccess,
             erroredOut,
+            totalCitationCountRef,
             totalCount,
             onClickButtonGroup,
             currentlySelectedTab

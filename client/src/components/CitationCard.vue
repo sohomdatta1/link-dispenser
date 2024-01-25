@@ -48,11 +48,14 @@
         <template #description v-if="$props.data">
             <cdx-icon :icon="cdxIconLink" /> <a :href="$props.data['url_info']['url']" target="_blank" class="link-general">{{ $props.data['url_info']['url'] }}</a>
             <br>
-            <template v-for="url in $props.data['url_info']['history']" :key="url['url']">
+            <span v-for="url in $props.data['url_info']['history']" :key="url['url']">
                 <cdx-icon :icon="cdxIconArrowNext" /> <a :href="url['url']" target="_blank" class="link-general">{{ url['url'] }}</a><br>
-            </template>
+            </span>
             <cdx-info-chip status="notice">
                 Status code: {{ $props.data['url_info'][ 'status' ] }}
+            </cdx-info-chip>
+            <cdx-info-chip status="notice" v-if="$props.data['url_info']['timeout']">
+            Request timed out
             </cdx-info-chip>
 
 		</template>

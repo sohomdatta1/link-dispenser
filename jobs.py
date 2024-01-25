@@ -47,4 +47,5 @@ def fetch_analysis(uuid: str):
     ret = []
     for i in all_data:
         ret.append(json.loads(i.split(b'|', 1)[1]))
+    ret.sort(key=lambda x: x['url_info']['priority'] if ('priority' in x['url_info']) else x['url_info']['desc'] )
     return ret
