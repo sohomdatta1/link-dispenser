@@ -9,7 +9,7 @@ def create_app() -> Flask:
         CELERY=dict(
             broker_url=redis_url,
             result_backend=redis_url,
-            default_queue=REDIS_KEY_PREFIX,
+            task_default_queue=REDIS_KEY_PREFIX + '-celery-queue',
             task_ignore_result=True,
         ),
     )
