@@ -1,7 +1,9 @@
 # https://wikitech.wikimedia.org/wiki/Help:Toolforge/Jobs_framework
 ---
-- name: celery
-  command: "celery"
+- name: crawljob
+  command: "crawljob"
   image: tool-link-dispenser/tool-link-dispenser:latest
   continuous: true
   emails: all
+  mem: 4Gi
+  cpu: 3
