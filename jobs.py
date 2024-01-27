@@ -4,21 +4,15 @@ from datetime import timedelta
 from linkcheck import analyze_url
 from wikiinteractor import analyze_article
 import json
-import os
-from concurrent.futures import ThreadPoolExecutor
+from celery import shared_task
+from app import celery as celery_app
 
-if 'MAX_WORKER' in os.environ:
-    max_workers = int( os.environ['MAX_WORKER'] )
-else:
-    max_workers = 5
-
-exec_pool = ThreadPoolExecutor(max_workers=max_workers)
-
-def async_main(json_data: dict, num: int, rid: UUID) -> None:
+@shared_task
+def crawl_page(json_data: dict, num: int, rid: UUID) -> None:
     url = json_data['url']
     json_data['url_info'] = analyze_url(url)
     r.sadd(REDIS_KEY_PREFIX + str(rid), str(num) + '|' + json.dumps(json_data))
-    r.expire(REDIS_KEY_PREFIX + str(rid), timedelta(days=1))
+    r.expire(REDIS_KEY_PREFIX + str(rid), timedelta(days=365))
 
 
 def push_analysis(article_name: str):
@@ -26,15 +20,13 @@ def push_analysis(article_name: str):
     article_data = analyze_article(article_name)
     citation_data = article_data['template_info']
     count = 0
-    futures_list = []
     for citation in citation_data:
         count += 1
-        futures_list.append(
-            exec_pool.submit(
-                async_main,
-                citation,
-                count,
-                run_id))
+        crawl_page.delay(
+            citation,
+            count,
+            run_id)
+        
     return {
         'exists': article_data['exists'],
         'count': article_data['template_count'],

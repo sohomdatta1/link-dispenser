@@ -1,1 +1,9 @@
 __pycache__
+output_*
+test*
+apicache*
+user-*
+logs/
+pywikibot*
+throttle.ctrl
+report-bot/

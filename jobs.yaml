@@ -1,0 +1,7 @@
+# https://wikitech.wikimedia.org/wiki/Help:Toolforge/Jobs_framework
+---
+- name: celery
+  command: "celery"
+  image: tool-link-dispenser/tool-link-dispenser:latest
+  continous: true
+  emails: all

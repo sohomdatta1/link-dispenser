@@ -1,1 +1,2 @@
-web: gunicorn -w 4 -b 0.0.0.0 app:app --access-logfile -
+web: ./scripts/start_gunicorn.sh
+celery: ./scripts/start_celery.sh

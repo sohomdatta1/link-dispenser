@@ -2,5 +2,9 @@
     ".*\\.?archive\\.org",
     ".*\\.?si\\.com",
     ".*\\.?doi\\.org",
-    ".*\\.?acm\\.org"
+    ".*\\.?acm\\.org",
+    ".*\\.?newspapers\\.com",
+    ".*\\.?nytimes\\.com",
+    ".*\\.?jstor\\.org",
+    ".*\\.?baseball-reference\\.com"
 ]

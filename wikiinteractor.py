@@ -8,23 +8,33 @@ from linkcheck import analyze_url
 
 
 def get_article_text(article_name, lang='en'):
-    resp = r.get(
-        f'https://{lang}.wikipedia.org/wiki/{article_name}?action=raw',
+    resp = r.post(
+        f'https://{lang}.wikipedia.org/w/api.php',
+        data={
+            "action": "query",
+            "format": "json",
+            "prop": "revisions",
+            "titles": article_name,
+            "formatversion": "2",
+            "rvprop": "content",
+            "rvslots": "main"
+        },
         headers={
             'X-Useragent-Header': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
         },
         timeout=10)
 
-    if resp.status_code != 200:
+    respjson = resp.json()
+    article = respjson['query']['pages'][0]
+    if 'missing' in article:
         return {
             "exists": False
         }
 
     return {
         "exists": True,
-        "text": resp.text
+        "text": article['revisions'][0]['slots']['main']['content'] # ????
     }
-
 
 def check_if_has_url(template: mpfh.nodes.Template) -> str | None:
     if template.has("chapter-url"):
@@ -92,7 +102,7 @@ def analyze_article(name: str):
 
 
 def analyze_article_and_urls(name: str):
-    article = analyze_article_and_urls(name)
+    article = analyze_article(name)
     if article['exists']:
         json_data = article['template_info']
         for data in json_data:
