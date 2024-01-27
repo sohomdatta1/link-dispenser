@@ -3,5 +3,5 @@
 - name: celery
   command: "celery"
   image: tool-link-dispenser/tool-link-dispenser:latest
-  continous: true
+  continuous: true
   emails: all
