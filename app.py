@@ -9,6 +9,11 @@ def create_app() -> Flask:
         CELERY=dict(
             broker_url=redis_url,
             result_backend=redis_url,
+            retry_policy={
+                'max_retries': 10 * 1000, # absurdly high
+                'interval_start': 2,
+                'interval_step': 2
+            },
             task_default_queue=REDIS_KEY_PREFIX + '-celery-queue',
             task_ignore_result=True,
         ),

@@ -30,7 +30,6 @@ def push_analysis_handler(article_name: str):
 def fetch_analysis_handler(uuid: str):
     return fetch_analysis(uuid)
 
-
 @app.route("/")
 def index():
     r = send_file('./client/dist/index.html')

@@ -30,10 +30,26 @@ def get_article_text(article_name, lang='en'):
         return {
             "exists": False
         }
+    resp = r.post(
+        f'https://{lang}.wikipedia.org/w/api.php',
+        data={
+            "action": "parse",
+            "format": "json",
+            "page": article_name,
+            "prop": "externallinks",
+            "formatversion": "2"
+        },
+        headers={
+            'X-Useragent-Header': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
+        },
+        timeout=10)
+    respjson = resp.json()
+    extlinks = respjson['parse']['externallinks']
 
     return {
         "exists": True,
-        "text": article['revisions'][0]['slots']['main']['content'] # ????
+        "text": article['revisions'][0]['slots']['main']['content'], # ????
+        "extlinks": extlinks
     }
 
 def check_if_has_url(template: mpfh.nodes.Template) -> str | None:
@@ -75,7 +91,7 @@ def parse_cite_templates_from_article(text: str) -> (List[str], int):
     intresting_templates = []
     count = 0
     for template in templates:
-        if str(template.name).lower().startswith("cite "):
+        if str(template.name).lower().startswith(("cite", "citation")):
             url = check_if_has_url(template)
             if url and str(url).startswith('http'):
                 count += 1

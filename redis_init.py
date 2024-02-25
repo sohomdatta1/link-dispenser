@@ -5,6 +5,8 @@ redis_url = 'redis://localhost:6379/9'
 
 if 'NOTDEV' in os.environ:
     redis_url = 'redis://redis.svc.tools.eqiad1.wikimedia.cloud:6379/0'
+elif 'DOCKER' in os.environ:
+    redis_url = 'redis://redis:6379/9'
 
 rediscl = redis.Redis(host='localhost', port=6379, db=9)
 

@@ -1,0 +1,13 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.webapp
+    ports:
+      - 8000:8000
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+  redis:
+    image: "redis:alpine"
