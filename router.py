@@ -3,15 +3,20 @@ from linkcheck import analyze_url
 from wikiinteractor import analyze_article_and_urls
 from app import flask_app as app, cache
 from jobs import push_analysis, fetch_analysis
-from redis_init import redis_url, REDIS_KEY_PREFIX
-
-
-
+from redis_init import rediscl as rcl
 
 @app.route("/api/lookup_url/<url>/<timestamp>")
 @cache.cached(timeout=1800, query_string=True)
 def lookup_url(url: str):
     return analyze_url(url)
+
+@app.route("/healthz")
+def healthz():
+    try:
+        rcl.ping()
+    except Exception as _:
+        return 500, 'BORKEN!'
+    return 'OK'
 
 
 @app.route("/api/analyze/<path:article_name>")
@@ -45,7 +50,7 @@ def serve_other_files(filename: str):
 
 
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found(_):
     r = send_file('./client/dist/index.html')
     r.headers['Cache-Control'] = 'max-age=604800'
     return r

@@ -3,11 +3,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.webapp
+    environment:
+      - DOCKER=TRUE
     ports:
       - 8000:8000
   celery:
     build:
       context: .
       dockerfile: Dockerfile.celery
+    environment:
+      - DOCKER=TRUE
   redis:
     image: "redis:alpine"

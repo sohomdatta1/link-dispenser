@@ -1,0 +1,14 @@
+spec:
+  template:
+    spec:
+      containers:
+        - name: webservice
+           livenessProbe:
+            exec:
+              command:
+                - "/bin/bash"
+                - "-c"
+                - "celery inspect ping -A apps -d celery@$HOSTNAME"
+            initialDelaySeconds: 1200
+            periodSeconds: 1200
+            timeoutSeconds: 30
