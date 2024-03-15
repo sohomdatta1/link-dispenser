@@ -4,4 +4,4 @@ mount: none
 cpu: 1
 mem: 1Gi
 replicas: 3
-health-check-path: /healthz
+health-check-path: /api/healthz

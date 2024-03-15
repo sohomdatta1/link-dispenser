@@ -10,7 +10,7 @@ from redis_init import rediscl as rcl
 def lookup_url(url: str):
     return analyze_url(url)
 
-@app.route("/healthz")
+@app.route("/api/healthz")
 def healthz():
     try:
         rcl.ping()
