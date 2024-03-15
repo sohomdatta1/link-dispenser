@@ -10,6 +10,7 @@ git clone https://gitlab.wikimedia.org/toolforge-repos/link-dispenser.git
 cd link-dispenser
 webservice start
 toolforge jobs load jobs.yaml
+./scripts/stop-server-from-falling-over.sh
 ```
 
 ## Conrtibutions

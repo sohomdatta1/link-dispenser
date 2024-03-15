@@ -2,8 +2,8 @@ spec:
   template:
     spec:
       containers:
-        - name: webservice
-           livenessProbe:
+        - name: job
+          livenessProbe:
             exec:
               command:
                 - "/bin/bash"
