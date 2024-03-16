@@ -3,5 +3,5 @@ type: buildservice
 mount: none
 cpu: 1
 mem: 1Gi
-replicas: 3
+replicas: 1
 health-check-path: /api/healthz
