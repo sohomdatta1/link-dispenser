@@ -4,6 +4,7 @@
   command: "crawljob"
   image: tool-link-dispenser/tool-link-dispenser:latest
   continuous: true
+  health-check-script: "ping"
   emails: all
   mem: 4Gi
   cpu: 3
