@@ -6,5 +6,5 @@
   continuous: true
   health-check-script: "launcher ping"
   emails: all
-  mem: 4Gi
+  mem: 1Gi
   cpu: "3"
