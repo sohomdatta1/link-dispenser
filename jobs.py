@@ -27,11 +27,13 @@ def push_analysis(article_name: str):
                 citation,
                 count,
                 run_id)
-        
+        return {
+            'exists': article_data['exists'],
+            'count': article_data['template_count'],
+            'rid': run_id
+        }
     return {
-        'exists': article_data['exists'],
-        'count': article_data['template_count'],
-        'rid': run_id
+        'exists': article_data['exists']
     }
 
 
