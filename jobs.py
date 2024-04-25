@@ -14,6 +14,10 @@ def crawl_page(json_data: dict, num: int, rid: UUID) -> None:
     r.sadd(REDIS_KEY_PREFIX + str(rid), str(num) + '|' + json.dumps(json_data))
     r.expire(REDIS_KEY_PREFIX + str(rid), timedelta(days=1))
 
+@shared_task(ignore_result=False)
+def alive(a: int, b:int) -> int:
+    return a + b
+
 
 def push_analysis(article_name: str):
     run_id = uuid()

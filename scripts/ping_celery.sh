@@ -1,2 +1,2 @@
 #!/bin/bash
-celery -A jobs.celery_app inspect ping
+python3 alive.py
