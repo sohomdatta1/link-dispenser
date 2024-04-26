@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 alive.py
+celery -A jobs.celery_app inspect ping -d worker@ld-sodium
