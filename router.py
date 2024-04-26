@@ -28,6 +28,7 @@ def analyze(article_name: str):
 @app.route("/api/push_analysis/<path:article_name>")
 @cache.cached(timeout=82800, query_string=True)
 def push_analysis_handler(article_name: str):
+    article_name = article_name.replace('+', ' ')
     return push_analysis(article_name)
 
 
