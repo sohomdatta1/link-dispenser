@@ -19,7 +19,7 @@ def get_url_status_info(url: str, verify=True) -> dict:
         resp = s.get(
             url,
             headers=headers,
-            timeout=60 * 2,
+            timeout=60,
             verify=verify,
             stream=True)
     except r.exceptions.TooManyRedirects as exc:
