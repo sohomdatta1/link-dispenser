@@ -2,6 +2,6 @@ backend: kubernetes
 type: buildservice
 mount: none
 cpu: 1
-mem: 0.5Gi
+mem: 1Gi
 replicas: 1
 health-check-path: /api/healthz
