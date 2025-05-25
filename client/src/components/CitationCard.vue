@@ -121,28 +121,28 @@ export default defineComponent({
 
 <style lang="less">
 @import '@wikimedia/codex-design-tokens/theme-wikimedia-ui.less';
-.card-type-ok .cdx-icon {
+.card-type-ok > .cdx-icon {
     color: @color-icon-success;
 }
 
-.card-type-down .cdx-icon {
+.card-type-down > .cdx-icon {
     color: @color-icon-warning;
 }
 
-.card-type-dead .cdx-icon {
+.card-type-dead > .cdx-icon {
     color: @color-destructive;
 }
 
-.card-type-spammy .cdx-icon {
+.card-type-spammy > .cdx-icon {
     color: @color-icon-warning;
+}
+
+.card-type-redirect > .cdx-icon {
+    color: @color-progressive;
 }
 
 .link-icon {
     margin-right: @spacing-25;
-}
-
-.card-type-redirect .cdx-icon {
-    color: @color-progressive;
 }
 
 .link-general {

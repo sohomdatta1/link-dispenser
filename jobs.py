@@ -16,12 +16,14 @@ def normalize(title):
     title = title.lower()
     title = re.sub(r'[^\w\s]', '', title)
     title = re.sub(r'\s+', ' ', title).strip()
-    title = re.sub(r'\|.*$', '', title)
     return title
 
 def title_similarity(title1, title2):
     t1 = normalize(title1)
     t2 = normalize(title2)
+
+    if t1 in t2 or t2 in t1:
+        return 1.0
     return SequenceMatcher(None, t1, t2).ratio()
 
 MATCH_THRESHOLD = 0.7

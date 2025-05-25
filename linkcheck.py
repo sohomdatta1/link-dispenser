@@ -191,7 +191,7 @@ def get_wikimedia_citoid_data(url: str) -> dict:
     try:
         u = parse_url(url)
         encoded_url = urlencode(u.geturl())
-        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers=headers, timeout=500)
+        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers=headers, timeout=10_000)
         response.raise_for_status()
         return response.json()
     except Exception as e:
