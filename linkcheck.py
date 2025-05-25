@@ -211,7 +211,7 @@ def could_be_blocked(url, resp) -> bool:
 def check_llm_use(json_data: dict) -> bool:
     if 'gpt' in json_data and json_data['gpt']:
         return True
-    if (json_data['desc'] == 'dead' or json_data['desc'] == 'down') and not json_data['blocked']:
+    if (json_data['desc'] == 'dead' or json_data['desc'] == 'down') and ('blocked' in json_data and not json_data['blocked']):
         return True
     if not json_data['citoid']:
         return True
