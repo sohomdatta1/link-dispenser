@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import AnalyzedResultsView from '../views/AnalyzedResultsView.vue'
+import LLMResultsView from '@/views/LLMResultsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +15,11 @@ const router = createRouter({
       path: '/analyze/:articleName(.*)',
       name: 'analyze',
       component: AnalyzedResultsView
+    },
+    {
+      path: '/llmanalyze/:articleName(.*)',
+      name: 'llmanalyze',
+      component: LLMResultsView
     },
     {
       path: '/about',

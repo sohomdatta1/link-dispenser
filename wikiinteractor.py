@@ -81,8 +81,15 @@ def get_archive_url(template: mpfh.nodes.Template) -> str | None:
 
 
 def get_title(template: mpfh.nodes.Template) -> str | None:
+    if template.has("chapter"):
+        return str(template.get("chapter").value).strip().replace('{{!}}', '|')
     if template.has("title"):
         return str(template.get("title").value).strip().replace('{{!}}', '|')
+
+def get_doi(template: mpfh.nodes.Template) -> str | None:
+    if template.has("doi"):
+        return f'https://doi.org/{str( template.get("doi").value ).strip()}'
+    return None
 
 
 def parse_cite_templates_from_article(text: str) -> (List[str], int):
@@ -97,6 +104,7 @@ def parse_cite_templates_from_article(text: str) -> (List[str], int):
                 count += 1
                 intresting_templates.append({
                     "url": url,
+                    "doi": get_doi(template),
                     "input": str(template),
                     "access-date": get_access_date(template),
                     "archive_url": get_archive_url(template),

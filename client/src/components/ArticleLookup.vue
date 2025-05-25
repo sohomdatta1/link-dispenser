@@ -1,46 +1,52 @@
 <template>
-	<cdx-field class="field">
-		<cdx-lookup
-			v-model:selected="selection"
-			:menu-items="menuItems"
-			:menu-config="menuConfig"
-			@input="onInput"
-			@load-more="onLoadMore"
-			@update:selected="onAnalyzeSelected"
-		>
-			<template #no-results>
-				No results found.
+	<div>
+		<cdx-field class="field">
+			<cdx-lookup
+				v-model:selected="selection"
+				:menu-items="menuItems"
+				:menu-config="menuConfig"
+				@input="onInput"
+				@load-more="onLoadMore"
+			>
+				<template #no-results>
+					No results found.
+				</template>
+			</cdx-lookup>
+			<template #label>
+				Select a page to analyze
 			</template>
-		</cdx-lookup>
-		<template #label>
-			Select a page to analyze
-		</template>
-		<template #help-text>
-			Start typing the name of a English Wikipedia article to analyze
-		</template>
-	</cdx-field>
+			<template #help-text>
+				Start typing the name of a English Wikipedia article to analyze
+			</template>
+		</cdx-field>
+
+		<cdx-checkbox
+			v-model="checkLLM">
+				Check for LLM citation patterns
+		</cdx-checkbox>
+
+		<cdx-button
+			:disabled="!selection"
+			@click="onAnalyzeClick"
+		>
+			Analyze page
+		</cdx-button>
+	</div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { CdxLookup, CdxField } from '@wikimedia/codex';
+import { CdxLookup, CdxField, CdxCheckbox, CdxButton } from '@wikimedia/codex';
 
 export default defineComponent( {
 	name: 'ArticleLookup',
-	components: { CdxLookup, CdxField },
+	components: { CdxLookup, CdxField, CdxCheckbox, CdxButton },
 	setup() {
 		const selection: Ref<any> = ref( null );
 		const menuItems: Ref<any[]> = ref( [] );
 		const currentSearchTerm = ref( '' );
+		const checkLLM = ref( false );
 
-		/**
-		 * Get search results.
-		 *
-		 * @param {string} searchTerm
-		 * @param {number} offset Optional result offset
-		 *
-		 * @return {Promise}
-		 */
 		function fetchResults( searchTerm: string ) {
 			const params = new URLSearchParams( {
 				"action": "query",
@@ -58,18 +64,9 @@ export default defineComponent( {
 				.then( ( response ) => response.json() );
 		}
 
-		/**
-		 * Handle lookup input.
-		 *
-		 * TODO: this should be debounced.
-		 *
-		 * @param {string} value
-		 */
 		function onInput( value: string ) {
-			// Internally track the current search term.
 			currentSearchTerm.value = value;
 
-			// Do nothing if we have no input.
 			if ( !value ) {
 				menuItems.value = [];
 				return;
@@ -77,18 +74,15 @@ export default defineComponent( {
 
 			fetchResults( value )
 				.then( ( data ) => {
-					// Make sure this data is still relevant first.
 					if ( currentSearchTerm.value !== value ) {
 						return;
 					}
 
-					// Reset the menu items if there are no results.
 					if ( !data.query.search || data.query.search.length === 0 ) {
 						menuItems.value = [];
 						return;
 					}
 
-					// Build an array of menu items.
 					const results = data.query.search.map( ( result: any ) => {
 						return {
 							label: result.title,
@@ -96,11 +90,9 @@ export default defineComponent( {
 						};
 					} );
 
-					// Update menuItems.
 					menuItems.value = results;
 				} )
 				.catch( () => {
-					// On error, set results to empty.
 					menuItems.value = [];
 				} );
 		}
@@ -129,15 +121,15 @@ export default defineComponent( {
 						};
 					} );
 
-					// Update menuItems.
 					const deduplicatedResults = deduplicateResults( results );
 					menuItems.value.push( ...deduplicatedResults );
 				} );
 		}
 
-		function onAnalyzeSelected( selected: string ) {
-			if ( selected !== null ) {
-				document.location.href = `/analyze/${selected}`
+		function onAnalyzeClick() {
+			if ( selection.value ) {
+				const basePath = checkLLM.value ? '/llmanalyze' : '/analyze';
+				document.location.href = `${basePath}/${encodeURIComponent(selection.value)}`;
 			}
 		}
 
@@ -149,13 +141,15 @@ export default defineComponent( {
 			selection,
 			menuItems,
 			menuConfig,
-			onAnalyzeSelected,
+			checkLLM,
 			onInput,
-			onLoadMore
+			onLoadMore,
+			onAnalyzeClick
 		};
 	}
 } );
 </script>
+
 <style lang='less' scoped>
 @import '@wikimedia/codex-design-tokens/theme-wikimedia-ui.less';
 .field {

@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.webapp
+    volumes:
+      - ./client:/app/client
     environment:
       - DOCKER=TRUE
     ports:

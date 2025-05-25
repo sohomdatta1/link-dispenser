@@ -1,6 +1,7 @@
 import requests as r
 import json
 from urllib.parse import urlparse as parse_url
+from urllib.parse import quote_plus as urlencode
 from socket import getaddrinfo, gaierror
 from waybackpy import WaybackMachineCDXServerAPI, WaybackMachineSaveAPI, exceptions as wbpye
 from dateutil import parser as date_parser
@@ -97,6 +98,15 @@ def get_dns_info(url: str) -> dict:
         "status": 1
     }
 
+def is_potentially_from_gpt(url: str) -> bool:
+    gpt_regex = r'\b(chatgpt|askpandi|copilot\.microsoft|m365copilot|gemini\.google|groq|grok)\.\w{2,3}\b'
+    u = parse_url(url)
+    if u.query:
+        query_params = u.query.split('&')
+        for param in query_params:
+            if param.startswith('utm_source=') and re.search(gpt_regex, u.netloc):
+                return True
+    return False
 
 def save_iarchive_url(url: str) -> dict:
     ia_save_server_api = WaybackMachineSaveAPI(url, ia_useragent)
@@ -149,6 +159,45 @@ def could_be_spammy(url_resp: dict):
             return True
     return False
 
+def first_registered_date(url: str) -> str:
+    try:
+        u = parse_url(url)
+        domain = u.netloc.split(':')[0]  # Remove port if present
+        response = r.get(f'https://crt.sh/?q={domain}&output=json', headers=headers, timeout=10)
+        response.raise_for_status()
+        certs = response.json()
+        if not certs:
+            return 0
+        first_cert = min(certs, key=lambda x: date_parser.parse(x['entry_timestamp']))
+        return date_parser.parse(first_cert['entry_timestamp']).isoformat()
+    except Exception as e:
+        print(f"Error fetching first registered date for {url}: {e}")
+        return 'NOTADATE'
+    
+def get_doi_data(url: str) -> dict:
+    try:
+        u = parse_url(url)
+        if not u.path.startswith('/') and u.netloc != 'doi.org':
+            return {}
+        doi = u.path.lstrip('/')
+        response = r.get(f'https://api.crossref.org/works/{doi}', headers=headers, timeout=10)
+        response.raise_for_status()
+        return response.json().get('message', {})
+    except Exception as e:
+        print(f"Error fetching DOI data for {url}: {e}")
+        return {}
+    
+def get_wikimedia_citoid_data(url: str) -> dict:
+    try:
+        u = parse_url(url)
+        encoded_url = urlencode(u.geturl())
+        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers=headers, timeout=500)
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        print(f"Error fetching Citoid data for {url}: {e}")
+        return {}
+
 
 def could_be_blocked(url, resp) -> bool:
     for url_regex in blocked_list:
@@ -159,8 +208,32 @@ def could_be_blocked(url, resp) -> bool:
     return False
 
 
+def check_llm_use(json_data: dict) -> bool:
+    if 'gpt' in json_data and json_data['gpt']:
+        return True
+    if (json_data['desc'] == 'dead' or json_data['desc'] == 'down') and not json_data['blocked']:
+        return True
+    if not json_data['citoid']:
+        return True
+    return False
+
 def analyze_url(url: str) -> dict:
-    json_data = get_url_status_info(url)
+    u = parse_url(url)
+    if u.netloc == 'doi.org':
+        doi_data = get_doi_data(url)
+        if doi_data['resource']['primary']['URL']:
+            url = doi_data['resource']['primary']['URL']
+            json_data = get_url_status_info(url)
+            json_data['doi'] = doi_data
+            json_data['doi_attempted'] = True
+            json_data['doi_valid'] = True
+        else:
+            json_data = get_url_status_info(url)
+            json_data['doi'] = doi_data
+            json_data['doi_attempted'] = True
+            json_data['doi_valid'] = False
+    else:
+        json_data = get_url_status_info(url)
     json_data['spammy'] = could_be_spammy(json_data)
     json_data['uid'] = str(uuid4())
     if (json_data['status'] >= 200 and json_data['status']
@@ -193,4 +266,8 @@ def analyze_url(url: str) -> dict:
         json_data['archives'] = {
             "status": 0
         }
+    json_data['gpt'] = is_potentially_from_gpt(url)
+    #json_data['first_registered'] = first_registered_date(url)
+    json_data['citoid'] = get_wikimedia_citoid_data(url)
+    json_data['hallucinated'] = check_llm_use(json_data)
     return json_data

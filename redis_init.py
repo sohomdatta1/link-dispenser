@@ -16,5 +16,8 @@ if 'NOTDEV' in os.environ:
         host='redis.svc.tools.eqiad1.wikimedia.cloud',
         port=6379,
         db=0)
+    
+elif 'DOCKER' in os.environ:
+    rediscl = redis.Redis(host='redis', port=6379, db=9)
 
 REDIS_KEY_PREFIX = 'mw-toolforge-link-dispenser'
