@@ -54,9 +54,10 @@ export default defineComponent( {
 				"list": "search",
 				"utf8": "1",
 				"formatversion": "2",
-				"srsearch": `intitle: ${searchTerm}`,
+				"srsearch": `${searchTerm}`,
 				"srinfo": "",
 				"srprop": "",
+				"srnamespace": "*",
 				"origin": "*"
 			} );
 
