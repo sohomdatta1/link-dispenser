@@ -153,6 +153,7 @@ export default defineComponent({
         function onClickButtonGroup( value: string ) {
             selectedTabName = value;
             currentlySelectedTab.value = value;
+            fetchedData = fetchedData.sort( ( a: any, b:any ) => ( b['crawl_time'] - a['crawl_time'] ) );
             if ( value === 'all' ) {
                 actualData.value = fetchedData;
                 return;

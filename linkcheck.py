@@ -6,6 +6,7 @@ from socket import getaddrinfo, gaierror
 from waybackpy import WaybackMachineCDXServerAPI, WaybackMachineSaveAPI, exceptions as wbpye
 from dateutil import parser as date_parser
 from uuid import uuid4
+import datetime
 import re
 
 
@@ -221,13 +222,19 @@ def analyze_url(url: str) -> dict:
     u = parse_url(url)
     if u.netloc == 'doi.org':
         doi_data = get_doi_data(url)
-        if doi_data['resource']['primary']['URL']:
-            url = doi_data['resource']['primary']['URL']
-            json_data = get_url_status_info(url)
-            json_data['doi'] = doi_data
-            json_data['doi_attempted'] = True
-            json_data['doi_valid'] = True
-        else:
+        try:
+            if doi_data['resource']['primary']['URL']:
+                url = doi_data['resource']['primary']['URL']
+                json_data = get_url_status_info(url)
+                json_data['doi'] = doi_data
+                json_data['doi_attempted'] = True
+                json_data['doi_valid'] = True
+            else:
+                json_data = get_url_status_info(url)
+                json_data['doi'] = doi_data
+                json_data['doi_attempted'] = True
+                json_data['doi_valid'] = False
+        except KeyError:
             json_data = get_url_status_info(url)
             json_data['doi'] = doi_data
             json_data['doi_attempted'] = True

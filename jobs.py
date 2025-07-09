@@ -8,7 +8,7 @@ from celery import shared_task
 from app import celery as celery_app
 from difflib import SequenceMatcher
 import re
-
+import datetime
 import re
 from difflib import SequenceMatcher
 
@@ -42,6 +42,8 @@ def crawl_page(json_data: dict, num: int, rid: UUID) -> None:
     if doi and 'doi_info' in json_data:
         json_data['hallucinated'] = json_data['hallucinated'] or json_data['doi_info'] == {}
         json_data['hallucinated_doi'] = json_data['hallucinated'] or json_data['doi_info'] == {}
+
+    json_data['crawl_time'] = datetime.datetime.now(datetime.timezone.utc).timestamp()
     r.sadd(REDIS_KEY_PREFIX + str(rid), str(num) + '|' + json.dumps(json_data))
     r.expire(REDIS_KEY_PREFIX + str(rid), timedelta(days=1))
 
@@ -77,5 +79,6 @@ def fetch_analysis(uuid: str):
     ret = []
     for i in all_data:
         ret.append(json.loads(i.split(b'|', 1)[1]))
-    ret.sort(key=lambda x: x['url_info']['priority'] if ('priority' in x['url_info']) else x['url_info']['desc'] )
+    #ret.sort(key=lambda x: x['url_info']['priority'] if ('priority' in x['url_info']) else x['url_info']['desc'] )
+    ret.sort(key=lambda x: x['crawl_time'], reverse=True)
     return ret

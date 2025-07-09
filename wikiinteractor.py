@@ -103,6 +103,7 @@ def parse_cite_templates_from_article(text: str) -> (List[str], int):
             if url and str(url).startswith('http'):
                 count += 1
                 intresting_templates.append({
+                    "id": count,
                     "url": url,
                     "doi": get_doi(template),
                     "input": str(template),

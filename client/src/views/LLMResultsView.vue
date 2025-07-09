@@ -58,8 +58,8 @@ export default defineComponent({
         const actualData: Ref<any[]> = ref( [] );
         const erroredOut = ref( false );
         const totalCount = ref( 0 );
-        const currentlySelectedTab = ref( 'all' );
-        let selectedTabName = 'all';
+        const currentlySelectedTab = ref( 'hallucinated' );
+        let selectedTabName = 'hallucinated';
         const route = useRoute();
         let buttons = ref([
             {
