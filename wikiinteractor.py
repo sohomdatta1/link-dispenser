@@ -20,7 +20,7 @@ def get_article_text(article_name, lang='en'):
             "rvslots": "main"
         },
         headers={
-            'X-Useragent-Header': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
+            'User-Agent': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
         },
         timeout=10)
 
@@ -40,7 +40,7 @@ def get_article_text(article_name, lang='en'):
             "formatversion": "2"
         },
         headers={
-            'X-Useragent-Header': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
+            'User-Agent': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
         },
         timeout=10)
     respjson = resp.json()
@@ -85,6 +85,9 @@ def get_title(template: mpfh.nodes.Template) -> str | None:
         return str(template.get("chapter").value).strip().replace('{{!}}', '|')
     if template.has("title"):
         return str(template.get("title").value).strip().replace('{{!}}', '|')
+    if template.has("trans-title"):
+        return str(template.get("trans-title").value).strip().replace('{{!}}', '|')
+    return None
 
 def get_doi(template: mpfh.nodes.Template) -> str | None:
     if template.has("doi"):
