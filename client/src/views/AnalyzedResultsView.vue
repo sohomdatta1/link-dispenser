@@ -50,6 +50,14 @@ import { CdxMessage, CdxProgressBar, CdxToggleButtonGroup } from '@wikimedia/cod
 import { useRoute } from 'vue-router';
 import CitationCard from '../components/CitationCard.vue'
 
+type Button = {
+    originalLabel: string;
+    label: string;
+    number: number;
+    value: string;
+    disabled?: boolean;
+};
+
 export default defineComponent({
     name: 'AnalyzedResult',
     components: { CdxProgressBar, CitationCard, CdxToggleButtonGroup, CdxMessage },
@@ -68,43 +76,53 @@ export default defineComponent({
         const currentlySelectedTab = ref( 'all' );
         let selectedTabName = 'all';
         const route = useRoute();
-        let buttons = ref([
+        let buttons = ref<Button[]>([
             {
+                originalLabel: 'All',
                 label: 'All',
                 number: 0,
                 value: 'all'
             },
             {
+                originalLabel: 'No issues',
                 label: 'No issues',
                 number: 0,
                 value: 'ok'
             },
             {
+                originalLabel: 'Redirects',
                 label: 'Redirects',
                 number: 0,
                 value: 'redirect'
             },
             {
+                originalLabel: 'Potentially spammy links',
                 label: 'Potentially spammy links',
                 number: 0,
                 value: 'spammy'
             },
             {
+                originalLabel: 'Links that could be down',
                 label: 'Links that could be down',
                 number: 0,
                 value: 'down'
             },
             {
+                originalLabel: 'Links that could be dead',
                 label: 'Links that could be dead',
                 number: 0,
                 value: 'dead'
             },
             {
+                originalLabel: 'Already has a archive.org link',
                 label: 'Already has a archive.org link',
+                number: 0,
                 value: 'archive'
             },
             {
+                originalLabel: 'Does not have a archive.org link',
                 label: 'Does not have a archive.org link',
+                number: 0,
                 value: 'notarchive'
             }
         ]);
@@ -177,12 +195,13 @@ export default defineComponent({
             }
 
             buttons.value = buttons.value
-                .map((btn) => {
+                .map((btn: Button) => {
                 const num = counts[btn.value] ?? 0
                 return {
                     ...btn,
                     number: num,
-                    label: num > 0 ? `${btn.label} (${num})` : btn.label,
+                    originalLabel: btn.originalLabel,
+                    label: num > 0 ? `${btn.originalLabel} (${num})` : btn.label,
                     disabled: num === 0 && btn.value !== 'all',
                 }
                 })

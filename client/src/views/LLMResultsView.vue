@@ -51,6 +51,14 @@ import { CdxMessage, CdxProgressBar, CdxToggleButtonGroup } from '@wikimedia/cod
 import { useRoute } from 'vue-router';
 import CitationCard from '../components/CitationCard.vue'
 
+type Button = {
+    originalLabel: string;
+    label: string;
+    number: number;
+    value: string;
+    disabled?: boolean;
+};
+
 export default defineComponent({
     name: 'AnalyzedResult',
     components: { CdxProgressBar, CitationCard, CdxToggleButtonGroup, CdxMessage },
@@ -69,23 +77,27 @@ export default defineComponent({
         const currentlySelectedTab = ref( 'hallucinated' );
         let selectedTabName = 'hallucinated';
         const route = useRoute();
-        let buttons = ref([
+        let buttons = ref<Button[]>([
             {
+                originalLabel: 'All',
                 label: 'All',
                 number: 0,
                 value: 'all'
             },
             {
+                originalLabel: 'Potentially LLM hallucinated',
                 label: 'Potentially LLM hallucinated',
                 number: 0,
                 value: 'hallucinated'
             },
             {
+                originalLabel: 'Unsure if LLM hallucinated',
                 label: 'Unsure if LLM hallucinated',
                 number: 0,
                 value: 'unsure'
             },
             {
+                originalLabel: 'Potentially not hallucinated',
                 label: 'Potentially not hallucinated',
                 number: 0,
                 value: 'nothallucinated'
@@ -184,15 +196,15 @@ export default defineComponent({
             }
 
             buttons.value = buttons.value
-                .map((btn) => {
+                .map((btn: Button) => {
                 const num = counts[btn.value as keyof typeof counts] ?? 0
                 return {
                     ...btn,
+                    originalLabel: btn.originalLabel as string,
                     number: num,
-                    label: num > 0 ? `${btn.label} (${num})` : btn.label,
+                    label: num > 0 ? `${btn.originalLabel} (${num})` : btn.label,
                 }
                 })
-                .filter((btn) => btn.number > 0)
         }
 
         function formatRelativeTime(date: Date) {
