@@ -1,4 +1,5 @@
 <template>
+    <div class="wrapper">
     <cdx-progress-bar aria--label="Analyzing" v-if="!showResults" inline />
     <div v-if="!showResults" class="maho-text-wrapper">
         <div>Analyzing <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a>, this might take a while..... I'd suggest grabbing a cup of coffee, taking a walk or doing some other activity. ({{ totalCount }}/{{ totalCitationCountRef }} URLs processed)</div>
@@ -9,6 +10,8 @@
     <div v-if="showResults && erroredOut" class="maho-text-wrapper">
         Something definitely went wrong here. Please report this URL to [[en:User talk:Sohom_Datta]] or sohom_#0 on Discord.
     </div>
+    <div v-if="showResults && isCached" class="maho-text-wrapper"><i>This result is cached from a previous run conducted <template v-if="cachedTimeExists"><abbr :title="cachedTime.toUTCString()">{{ formatRelativeTime(cachedTime) }}</abbr></template><template v-else>within the last 24 hours</template>, to get a fresh run, <a :href="`/llmanalyze/${ $route.params.articleName }?nocache=yes`">use this link</a>.</i></div>
+    <div>
     <template v-if="!notSuccess && !erroredOut">
         <div>
             <div class="floating-header">
@@ -29,7 +32,7 @@
                     <div>{{ totalCount }} URLs detected in the article.</div>
                 </div>
                 <div v-if="actualData.length === 0">
-                    <div>No URLs in the article that meet this criteria.</div>
+                    <cdx-message type="warning" inline>No URLs in the article that meet this criteria.</cdx-message>
                 </div>
             </div>
             <br>
@@ -38,17 +41,19 @@
             </template>
         </div>
     </template>
+    </div>
+    </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue'
-import { CdxProgressBar, CdxToggleButtonGroup } from '@wikimedia/codex';
+import { CdxMessage, CdxProgressBar, CdxToggleButtonGroup } from '@wikimedia/codex';
 import { useRoute } from 'vue-router';
 import CitationCard from '../components/CitationCard.vue'
 
 export default defineComponent({
     name: 'AnalyzedResult',
-    components: { CdxProgressBar, CitationCard, CdxToggleButtonGroup },
+    components: { CdxProgressBar, CitationCard, CdxToggleButtonGroup, CdxMessage },
     setup() {
         const showResults = ref( false );
         const notSuccess = ref( false );
@@ -57,6 +62,9 @@ export default defineComponent({
         let fetchedData: any[] = [];
         const actualData: Ref<any[]> = ref( [] );
         const erroredOut = ref( false );
+        const isCached = ref( false );
+        const cachedTimeExists = ref( false );
+        const cachedTime = ref( new Date() );
         const totalCount = ref( 0 );
         const currentlySelectedTab = ref( 'hallucinated' );
         let selectedTabName = 'hallucinated';
@@ -97,6 +105,11 @@ export default defineComponent({
             }
             const runid = json['rid'];
             totalCitationCount = json['count'];
+            isCached.value = json['cached'];
+            if ( json['computed_on'] ) {
+                cachedTime.value = new Date( json['computed_on'] );
+                cachedTimeExists.value = true;
+            }
             totalCitationCountRef.value = totalCitationCount;
             await fetchData( runid );
         }
@@ -126,6 +139,7 @@ export default defineComponent({
             fetchedData = json;
             totalCount.value = json.length;
             onClickButtonGroup( selectedTabName );
+            updateButtons(fetchedData);
         }
 
         initData().catch( () => {
@@ -159,12 +173,59 @@ export default defineComponent({
             actualData.value = fetchedData.filter( ( elem: any ) => elem['url_info']['desc'] === value )
         }
 
+        function updateButtons(fetchedData: any[]) {
+            const counts = {
+                all: fetchedData.length,
+                hallucinated: fetchedData.filter(
+                (e) => e.hallucinated && !e.hallucinated_unsure
+                ).length,
+                unsure: fetchedData.filter((e) => e.hallucinated_unsure).length,
+                nothallucinated: fetchedData.filter((e) => !e.hallucinated).length,
+            }
+
+            buttons.value = buttons.value
+                .map((btn) => {
+                const num = counts[btn.value as keyof typeof counts] ?? 0
+                return {
+                    ...btn,
+                    number: num,
+                    label: num > 0 ? `${btn.label} (${num})` : btn.label,
+                }
+                })
+                .filter((btn) => btn.number > 0)
+        }
+
+        function formatRelativeTime(date: Date) {
+            const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" })
+            const now = new Date()
+            const diffSeconds = Math.floor((date.getTime() - now.getTime()) / 1000)
+
+            const ranges = {
+                year: 60 * 60 * 24 * 365,
+                month: 60 * 60 * 24 * 30,
+                day: 60 * 60 * 24,
+                hour: 60 * 60,
+                minute: 60,
+                second: 1,
+            }
+
+            for (const [unit, secondsInUnit] of Object.entries(ranges)) {
+                if (Math.abs(diffSeconds) >= secondsInUnit || unit === "second") {
+                return rtf.format(Math.round(diffSeconds / secondsInUnit), unit as Intl.RelativeTimeFormatUnit)
+                }
+            }
+        }
+
         return {
             showResults,
             fetchedData,
             actualData,
             buttons,
             notSuccess,
+            isCached,
+            cachedTime,
+            cachedTimeExists,
+            formatRelativeTime,
             erroredOut,
             totalCitationCountRef,
             totalCount,

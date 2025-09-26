@@ -67,7 +67,8 @@ def push_analysis(article_name: str):
         return {
             'exists': article_data['exists'],
             'count': article_data['template_count'],
-            'rid': run_id
+            'rid': run_id,
+            'computed_on': datetime.datetime.now(datetime.timezone.utc)
         }
     return {
         'exists': article_data['exists']

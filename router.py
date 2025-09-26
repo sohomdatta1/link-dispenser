@@ -38,7 +38,17 @@ def cached_push_analysis(article_name: str, _query_params: dict = None):
 def push_analysis_handler(article_name: str):
     article_name = article_name.replace('+', ' ')
     query_params = request.args.to_dict()
+
+    cache_key = cached_push_analysis.make_cache_key(
+        cached_push_analysis.uncached,
+        *[article_name, query_params]
+    )
+
+    cached_hit = cache.get(cache_key) is not None
+
     result = cached_push_analysis(article_name, query_params)
+    result['cached'] = cached_hit
+
     return make_response(result)
 
 @app.after_request
