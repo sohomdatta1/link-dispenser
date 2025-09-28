@@ -5,11 +5,9 @@
       :icon="iconForDesc($props.data['url_info']['desc'])"
       :class="`card-type-${$props.data['url_info']['desc']}`"
     >
-      <!-- Title & chips -->
       <template #title>
         {{ $props.data['title'] }}
 
-        <!-- Issue chips -->
         <div class="chip-row" v-if="$props.data['url_info']['desc'] !== 'ok' || ($props.data['hallucinated'] && considerLLM) || (!$props.data['citoid'] && considerLLM) || ($props.data['hallucinated_doi'] && considerLLM) || ($props.data['title_similarity'] < 0.7 && considerLLM)">
           <b>Issue(s):</b>
           <cdx-info-chip v-if="$props.data['url_info']['desc'] !== 'ok' && $props.data['url_info']['desc'] !== 'redirect'">
@@ -39,9 +37,7 @@
         </div>
       </template>
 
-      <!-- Description -->
       <template #description>
-        <!-- Main link -->
         <cdx-icon :icon="cdxIconLink" class="link-icon" />
         <a :href="$props.data['url_info']['url']" target="_blank" class="link-general">
           {{ $props.data['url_info']['url'] }}
@@ -72,9 +68,7 @@
               <br />
             </span>
         </div>
-        
-        
-        
+
         <div class="chip-row">
           <div v-if="$props.data['archive_url'] && !considerLLM">
             <b>Archived:</b> <a :href="$props.data['archive_url']" target="_blank" class="link-general">{{ $props.data['archive_url'] }}</a>
@@ -99,7 +93,7 @@
             <b>ISBN:</b> {{ $props.data['isbn'] }} <span class="warn"><cdx-icon :icon="cdxIconAlert"/> Invalid ISBN checksum</span>
           </div>
           <div v-else-if="$props.data['isbn'] && !considerLLM">
-            <b>ISBN:</b> {{ $props.data['isbn'] }}
+            <b>ISBN:</b> {{ $props.data['isbn'] }} <cdx-info-chip status="success" v-if="$props.data['isbn_in_openlibrary'] === true">ISBN exists in OpenLibrary</cdx-info-chip>
           </div>
           <div v-if="$props.data['doi'] && !considerLLM">
             <b>DOI:</b> <a :href="`${$props.data['doi']}`" target="_blank" class="link-general">{{ $props.data['doi'].replace('https://doi.org/', '') }}</a>
@@ -115,7 +109,7 @@
             <cdx-info-chip status="success" v-else-if="$props.data['doi_does_not_exist'] === false">
               DOI exists in CrossRef
             </cdx-info-chip>
-            <cdx-info-chip status="error" v-if="$props.data['doi_info']['doi_valid'] === false && $props.data['doi_does_not_exist'] === true">
+            <cdx-info-chip status="error" v-if="$props.data['doi_info']['doi_valid'] === false">
               DOI could not be validated
             </cdx-info-chip>
           </div>
