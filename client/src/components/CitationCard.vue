@@ -30,7 +30,7 @@
           <cdx-info-chip v-else-if="$props.data['title_similarity'] < 0.7 && considerLLM">
             Citoid title is very dissimilar
           </cdx-info-chip>
-          <cdx-info-chip v-else-if="$props.data['hallucinated_doi']">
+          <cdx-info-chip v-else-if="$props.data['hallucinated_doi'] && considerLLM">
             DOI does not exist
           </cdx-info-chip>
           <cdx-info-chip v-if="$props.data['valid_isbn'] === false">
@@ -100,6 +100,24 @@
           </div>
           <div v-else-if="$props.data['isbn'] && !considerLLM">
             <b>ISBN:</b> {{ $props.data['isbn'] }}
+          </div>
+          <div v-if="$props.data['doi'] && !considerLLM">
+            <b>DOI:</b> <a :href="`${$props.data['doi']}`" target="_blank" class="link-general">{{ $props.data['doi'].replace('https://doi.org/', '') }}</a>
+            <span v-if="$props.data['doi_info']['doi_valid'] === false || $props.data['doi_does_not_exist'] === true">
+                <cdx-info-chip status="warning" >
+                  DOI does not exist in CrossRef
+                </cdx-info-chip>
+                <cdx-info-chip status="success" >
+                  DOI resolves through dx.doi.org
+                </cdx-info-chip>
+            </span>
+           
+            <cdx-info-chip status="success" v-else-if="$props.data['doi_does_not_exist'] === false">
+              DOI exists in CrossRef
+            </cdx-info-chip>
+            <cdx-info-chip status="error" v-if="$props.data['doi_info']['doi_valid'] === true && $props.data['doi_does_not_exist'] === true">
+              DOI could not be validated
+            </cdx-info-chip>
           </div>
           <citoid-dump v-bind:data="$props.data" v-if="considerLLM" />
           <details>

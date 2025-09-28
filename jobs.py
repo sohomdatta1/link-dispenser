@@ -40,8 +40,9 @@ def crawl_page(json_data: dict, num: int, rid: UUID) -> None:
     json_data['title_similarity'] = title_similarity(json_data['title'], json_data['url_info']['citoid'][0]['title'].strip()) if json_data['url_info']['citoid'] else 0
     json_data['hallucinated_unsure'] = True if not json_data['url_info']['hallucinated'] and not json_data['url_info']['citoid'] else False
     if doi and 'doi_info' in json_data:
-        json_data['hallucinated'] = json_data['hallucinated'] or json_data['doi_info'] == {}
-        json_data['hallucinated_doi'] = json_data['hallucinated'] or json_data['doi_info'] == {}
+        json_data['hallucinated'] = json_data['hallucinated'] or json_data['doi_valid'] == False
+        json_data['hallucinated_doi'] = json_data['hallucinated'] or json_data['doi_valid'] == False
+        json_data['doi_does_not_exist'] = json_data['doi_info'] == {}
 
     json_data['crawl_time'] = datetime.datetime.now(datetime.timezone.utc).timestamp()
     json_data['valid_isbn'] = is_valid_isbn(json_data['isbn']) if json_data.get('isbn', None) else None

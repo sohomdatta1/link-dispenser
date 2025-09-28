@@ -193,6 +193,18 @@ def get_doi_data(url: str) -> dict:
         print(f"Error fetching DOI data for {url}: {e}")
         return {}
     
+def check_doi(url: str):
+    try:
+        resp = r.head(url, headers={ 'User-Agent': ia_useragent }, allow_redirects=True, timeout=10)
+        if resp.status_code == 200:
+            return {"valid": True, "final_url": resp.url}
+        elif 300 <= resp.status_code < 400:
+            return {"valid": True, "redirect": resp.headers.get("Location")}
+        else:
+            return {"valid": False, "status": resp.status_code}
+    except r.RequestException as e:
+        return {"valid": False, "error": str(e)}
+    
 def get_wikimedia_citoid_data(url: str) -> dict:
     try:
         u = parse_url(url)
@@ -238,12 +250,12 @@ def analyze_url(url: str) -> dict:
                 json_data = get_url_status_info(url)
                 json_data['doi'] = doi_data
                 json_data['doi_attempted'] = True
-                json_data['doi_valid'] = False
+                json_data['doi_valid'] = check_doi(url).get('valid', False)
         except KeyError:
             json_data = get_url_status_info(url)
             json_data['doi'] = doi_data
             json_data['doi_attempted'] = True
-            json_data['doi_valid'] = False
+            json_data['doi_valid'] = check_doi(url).get('valid', False)
     else:
         json_data = get_url_status_info(url)
     json_data['spammy'] = could_be_spammy(json_data)
