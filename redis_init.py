@@ -4,7 +4,11 @@ import redis
 redis_url = 'redis://localhost:6379/9'
 
 if 'NOTDEV' in os.environ:
-    redis_url = 'redis://redis:6379/9'
+    redis_password = os.environ.get('REDIS_PASSWORD', None)
+    if redis_password:
+        redis_url = f'redis://:{redis_password}@redis:6379/9'
+    else:
+        redis_url = 'redis://redis:6379/9'
 elif 'DOCKER' in os.environ:
     redis_url = 'redis://redis:6379/9'
 
