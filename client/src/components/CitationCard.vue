@@ -115,7 +115,7 @@
             <cdx-info-chip status="success" v-else-if="$props.data['doi_does_not_exist'] === false">
               DOI exists in CrossRef
             </cdx-info-chip>
-            <cdx-info-chip status="error" v-if="$props.data['doi_info']['doi_valid'] === true && $props.data['doi_does_not_exist'] === true">
+            <cdx-info-chip status="error" v-if="$props.data['doi_info']['doi_valid'] === false && $props.data['doi_does_not_exist'] === true">
               DOI could not be validated
             </cdx-info-chip>
           </div>
