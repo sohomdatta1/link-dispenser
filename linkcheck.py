@@ -7,6 +7,8 @@ from waybackpy import WaybackMachineCDXServerAPI, WaybackMachineSaveAPI, excepti
 from dateutil import parser as date_parser
 from uuid import uuid4
 import datetime
+import tldextract
+from citeuseen import annotate_url as get_citeunseen_data_for_url
 import re
 
 
@@ -153,9 +155,12 @@ def could_be_spammy(url_resp: dict):
     # doi will generally not be spam??
     if str(start_url_netloc).endswith('doi.org'):
         return False
+    
+    etld = tldextract.extract(start_url_netloc)
+    start_url_netloc = etld.top_domain_under_public_suffix
 
     for resp in url_resp['history']:
-        curr_resp_netloc = parse_url(resp['url']).netloc
+        curr_resp_netloc = tldextract.extract(resp['url']).top_domain_under_public_suffix
         if not curr_resp_netloc.startswith(start_url_netloc):
             return True
     return False
@@ -181,7 +186,7 @@ def get_doi_data(url: str) -> dict:
         if not u.path.startswith('/') and u.netloc != 'doi.org':
             return {}
         doi = u.path.lstrip('/')
-        response = r.get(f'https://api.crossref.org/works/{doi}', headers=headers, timeout=10)
+        response = r.get(f'https://api.crossref.org/works/{doi}', headers={'User-Agent': ia_useragent}, timeout=10)
         response.raise_for_status()
         return response.json().get('message', {})
     except Exception as e:
@@ -192,7 +197,7 @@ def get_wikimedia_citoid_data(url: str) -> dict:
     try:
         u = parse_url(url)
         encoded_url = urlencode(u.geturl())
-        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers=headers, timeout=10_000)
+        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers={ 'User-Agent': ia_useragent }, timeout=10_000)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -277,4 +282,5 @@ def analyze_url(url: str) -> dict:
     #json_data['first_registered'] = first_registered_date(url)
     json_data['citoid'] = get_wikimedia_citoid_data(url)
     json_data['hallucinated'] = check_llm_use(json_data)
+    json_data['citeuseen'] = get_citeunseen_data_for_url(url)
     return json_data

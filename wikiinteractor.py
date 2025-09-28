@@ -6,6 +6,7 @@ import datetime
 
 from linkcheck import analyze_url
 
+from useragent import USERAGENT
 
 def get_article_text(article_name, lang='en'):
     resp = r.post(
@@ -20,7 +21,7 @@ def get_article_text(article_name, lang='en'):
             "rvslots": "main"
         },
         headers={
-            'User-Agent': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
+            'User-Agent': USERAGENT
         },
         timeout=10)
 
@@ -45,12 +46,35 @@ def get_article_text(article_name, lang='en'):
         timeout=10)
     respjson = resp.json()
     extlinks = respjson['parse']['externallinks']
+    oldest_rev_time = get_oldest_revision_time(article_name, lang)
 
     return {
         "exists": True,
         "text": article['revisions'][0]['slots']['main']['content'], # ????
-        "extlinks": extlinks
+        "extlinks": extlinks,
+        "oldest_rev_time": oldest_rev_time
     }
+
+def get_oldest_revision_time(article_name, lang='en'):
+        url = "https://en.wikipedia.org/w/api.php"
+        params = {
+            "action": "query",
+            "prop": "revisions",
+            "titles": article_name,
+            "rvlimit": 1,
+            "rvdir": "newer",
+            "rvprop": "timestamp",
+            "format": "json"
+        }
+
+        response = r.get(url, params=params, headers={ 'User-Agent': USERAGENT }, timeout=10)
+        data = response.json()
+
+        pages = data.get("query", {}).get("pages", {})
+        for _, page in pages.items():
+            if "revisions" in page:
+                return page["revisions"][0]["timestamp"]
+        return None
 
 def check_if_has_url(template: mpfh.nodes.Template) -> str | None:
     if template.has("chapter-url"):
@@ -79,6 +103,16 @@ def get_archive_url(template: mpfh.nodes.Template) -> str | None:
         return str(template.get("archive-url").value).strip()
     return None
 
+def get_archive_date(template: mpfh.nodes.Template) -> str | None:
+    if template.has("archive-date"):
+        return str(template.get("archive-date").value).strip()
+    return None
+
+def get_url_status(template: mpfh.nodes.Template) -> str | None:
+    if template.has("url-status"):
+        return str(template.get("url-status").value).strip()
+    return None
+
 
 def get_title(template: mpfh.nodes.Template) -> str | None:
     if template.has("chapter"):
@@ -94,8 +128,13 @@ def get_doi(template: mpfh.nodes.Template) -> str | None:
         return f'https://doi.org/{str( template.get("doi").value ).strip()}'
     return None
 
+def get_isbn(template: mpfh.nodes.Template) -> str | None:
+    if template.has("isbn"):
+        return str(template.get("isbn").value).strip()
+    return None
 
-def parse_cite_templates_from_article(text: str) -> (List[str], int):
+
+def parse_cite_templates_from_article(text: str, oldest_rev_time: str) -> (List[str], int):
     wikicode = mpfh.parse(text)
     templates = wikicode.filter_templates()
     intresting_templates = []
@@ -108,12 +147,17 @@ def parse_cite_templates_from_article(text: str) -> (List[str], int):
                 intresting_templates.append({
                     "id": count,
                     "url": url,
+                    "template_name": str(template.name).strip(),
+                    "template_url_status": get_url_status(template),
+                    "archive_date": get_archive_date(template),
                     "doi": get_doi(template),
                     "input": str(template),
-                    "access-date": get_access_date(template),
+                    "access_date": get_access_date(template),
                     "archive_url": get_archive_url(template),
+                    "isbn": get_isbn(template),
                     "title": get_title(template),
-                    "publication_date": get_publication_date(template)
+                    "publication_date": get_publication_date(template),
+                    "article_oldest_rev_time": oldest_rev_time
                 })
     return (intresting_templates, count)
 
@@ -121,7 +165,7 @@ def parse_cite_templates_from_article(text: str) -> (List[str], int):
 def analyze_article(name: str):
     article = get_article_text(name)
     if article['exists']:
-        json_data = parse_cite_templates_from_article(article['text'])
+        json_data = parse_cite_templates_from_article(article['text'], article['oldest_rev_time'])
         article['text'] = ''
         article['template_info'] = json_data[0]
         article['template_count'] = json_data[1]
@@ -134,8 +178,6 @@ def analyze_article_and_urls(name: str):
     if article['exists']:
         json_data = article['template_info']
         for data in json_data:
-            access_date = data['access-date'] or str(
-                datetime.datetime.utcnow().strftime('%d-%m-%Y'))
             data['url_infos'] = analyze_url(data['url'])
         return article
     return article

@@ -44,13 +44,23 @@ def crawl_page(json_data: dict, num: int, rid: UUID) -> None:
         json_data['hallucinated_doi'] = json_data['hallucinated'] or json_data['doi_info'] == {}
 
     json_data['crawl_time'] = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    json_data['valid_isbn'] = is_valid_isbn(json_data['isbn']) if json_data.get('isbn', None) else None
     r.sadd(REDIS_KEY_PREFIX + str(rid), str(num) + '|' + json.dumps(json_data))
-    r.expire(REDIS_KEY_PREFIX + str(rid), timedelta(days=1))
 
 @shared_task(ignore_result=False)
 def alive(a: int, b:int) -> int:
     return a + b
 
+
+def is_valid_isbn(isbn: str) -> bool:
+    isbn = isbn.replace("-", "").replace(" ", "")
+    if len(isbn) == 10:
+        total = sum((10 - i) * (10 if x == "X" else int(x)) for i, x in enumerate(isbn))
+        return total % 11 == 0
+    elif len(isbn) == 13:
+        total = sum((int(x) * (1 if i % 2 == 0 else 3)) for i, x in enumerate(isbn))
+        return total % 10 == 0
+    return False
 
 def push_analysis(article_name: str):
     run_id = uuid()

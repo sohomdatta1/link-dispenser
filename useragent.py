@@ -1,0 +1,1 @@
+USERAGENT = 'Wikimedia-Toolforge-Link-Dispenser/1.0'

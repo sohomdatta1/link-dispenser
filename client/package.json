@@ -15,11 +15,11 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@wikimedia/codex": "^1.23.0",
-    "@wikimedia/codex-design-tokens": "^1.23.0",
-    "@wikimedia/codex-icons": "^1.23.0",
-    "pinia": "^3.0.2",
-    "vue": "^3.5.14",
+    "@wikimedia/codex": "^2.3.2",
+    "@wikimedia/codex-design-tokens": "^2.3.2",
+    "@wikimedia/codex-icons": "^2.3.2",
+    "pinia": "^3.0.3",
+    "vue": "^3.5.22",
     "vue-router": "^4.5.1"
   },
   "devDependencies": {

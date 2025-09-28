@@ -10,7 +10,7 @@ WIKIMEDIA_ORIGIN_PATTERN = re_compile(
     r"^https:\/\/([a-z\-]+\.)?(wikipedia|wikimedia|wiktionary|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wikidata|mediawiki|wikimediafoundation)\.org$"
 )
 
-@app.route("/api/lookup_url/<url>/<timestamp>")
+@app.route("/api/lookup_url/<url>")
 @cache.cached(timeout=1800, query_string=True)
 def lookup_url(url: str):
     return analyze_url(url)
@@ -22,6 +22,12 @@ def healthz():
     except Exception as _:
         return 500, 'BORKEN!'
     return 'OK'
+
+@app.route("/api/citeunseen/<path:url>")
+@cache.cached(timeout=1800, query_string=True)
+def citeunseen(url: str):
+    from citeuseen import annotate_url as annotate_url_with_citeunseen_data
+    return annotate_url_with_citeunseen_data(url)
 
 
 @app.route("/api/analyze/<path:article_name>")
