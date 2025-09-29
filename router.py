@@ -75,6 +75,13 @@ def index():
     r.headers['Cache-Control'] = 'max-age=604800'
     return r
 
+@app.route("/robots.txt")
+
+def robots_txt():
+    content = open('robots.txt', encoding='utf-8').read()
+    response = make_response(content)
+    response.headers["Content-Type"] = "text/plain, charset=utf-8"
+    return response
 
 @app.route("/<path:filename>")
 def serve_other_files(filename: str):
