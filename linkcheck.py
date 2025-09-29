@@ -6,15 +6,14 @@ from socket import getaddrinfo, gaierror
 from waybackpy import WaybackMachineCDXServerAPI, WaybackMachineSaveAPI, exceptions as wbpye
 from dateutil import parser as date_parser
 from uuid import uuid4
-import datetime
 import tldextract
 from citeuseen import annotate_url as get_citeunseen_data_for_url
 import re
+from useragent import USERAGENT
 
 
 headers = json.load(open('headers.json', encoding='utf-8'))
 blocked_list = json.load(open('blocked.json', encoding='utf-8'))
-ia_useragent = 'Wikimedia_Link_Dispenser/1.0'
 
 
 def get_url_status_info(url: str, verify=True) -> dict:
@@ -112,7 +111,7 @@ def is_potentially_from_gpt(url: str) -> bool:
     return False
 
 def save_iarchive_url(url: str) -> dict:
-    ia_save_server_api = WaybackMachineSaveAPI(url, ia_useragent)
+    ia_save_server_api = WaybackMachineSaveAPI(url, USERAGENT)
     try:
         url = ia_save_server_api.save()
     except wbpye.MaximumSaveRetriesExceeded as _:
@@ -127,7 +126,7 @@ def save_iarchive_url(url: str) -> dict:
 
 
 def get_iarchive_data(url: str, date: int) -> dict:
-    ia_cdx_server_api = WaybackMachineCDXServerAPI(url, ia_useragent)
+    ia_cdx_server_api = WaybackMachineCDXServerAPI(url, USERAGENT)
 
     try:
         near = ia_cdx_server_api.near(unix_timestamp=date)
@@ -186,7 +185,7 @@ def get_doi_data(url: str) -> dict:
         if not u.path.startswith('/') and u.netloc != 'doi.org':
             return {}
         doi = u.path.lstrip('/')
-        response = r.get(f'https://api.crossref.org/works/{doi}', headers={'User-Agent': ia_useragent}, timeout=10)
+        response = r.get(f'https://api.crossref.org/works/{doi}', headers={'User-Agent': USERAGENT}, timeout=10)
         response.raise_for_status()
         return response.json().get('message', {})
     except Exception as e:
@@ -195,7 +194,7 @@ def get_doi_data(url: str) -> dict:
     
 def check_doi(url: str):
     try:
-        resp = r.head(url, headers={ 'User-Agent': ia_useragent }, allow_redirects=True, timeout=10)
+        resp = r.head(url, headers={ 'User-Agent': USERAGENT }, allow_redirects=True, timeout=10)
         if resp.status_code == 200:
             return {"valid": True, "final_url": resp.url}
         elif 300 <= resp.status_code < 400:
@@ -209,7 +208,7 @@ def get_wikimedia_citoid_data(url: str) -> dict:
     try:
         u = parse_url(url)
         encoded_url = urlencode(u.geturl())
-        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers={ 'User-Agent': ia_useragent }, timeout=10_000)
+        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers={ 'User-Agent': USERAGENT }, timeout=10_000)
         response.raise_for_status()
         return response.json()
     except Exception as e:

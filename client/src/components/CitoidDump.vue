@@ -21,10 +21,6 @@
                 </pre>
             </div> -->
         </div>
-        <!-- <cdx-accordion class="citation-data" seperation="minimal">
-            <template #title>Input citation data</template>
-            <pre class="abstract"> {{ $props.data['input'] }} </pre>
-        </cdx-accordion> -->
         <details v-if="$props.data['url_info']['citoid'].length && $props.data['url_info']['citoid'].length != 0">
             <summary>Full Citoid data ({{ Object.keys($props.data['url_info']['citoid'][0]).length }} fields)</summary>
             <pre class="abstract-code"><code> {{ JSON.stringify($props.data['url_info']['citoid'][0], null, 2) }} </code></pre>
