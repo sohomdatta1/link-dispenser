@@ -47,7 +47,7 @@ def crawl_page(json_data: dict, num: int, rid: UUID) -> None:
 
     json_data['crawl_time'] = datetime.datetime.now(datetime.timezone.utc).timestamp()
     json_data['valid_isbn'] = is_valid_isbn(json_data['isbn']) if json_data.get('isbn', None) else None
-    json_data['isbn_in_openlibrary'] = isbn_exists_in_openlibrary(json_data['isbn']) if json_data.get('isbn', None) and json_data['valid_isbn'] else None
+    #json_data['isbn_in_openlibrary'] = isbn_exists_in_openlibrary(json_data['isbn']) if json_data.get('isbn', None) and json_data['valid_isbn'] else None
     r.sadd(REDIS_KEY_PREFIX + str(rid), str(num) + '|' + json.dumps(json_data))
 
 @shared_task(ignore_result=False)
