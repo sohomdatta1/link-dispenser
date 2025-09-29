@@ -47,12 +47,12 @@ export default defineComponent({
       }
 
       // Case 3: Template says live, linkcheck says not ok
-      if (templateUrlStatus === 'live' && desc !== 'ok') {
+      if (templateUrlStatus === 'live' && desc !== 'ok' && desc !== 'redirect') {
         return false
       }
 
       // Case 4: Template says live, linkcheck says ok
-      if (templateUrlStatus === 'live' && desc === 'ok') {
+      if (templateUrlStatus === 'live' && (desc === 'ok' || desc === 'redirect')) {
         return true
       }
 
