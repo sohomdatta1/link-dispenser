@@ -69,11 +69,11 @@
             </span>
         </div>
 
-        <div>
-          <span v-if="$props.data['url_info']['citeuseen']['parsedTags'].length && $props.data['url_info']['citeuseen']['parsedTags'].length != 0 && !considerLLM && false">
-            <b>CiteUnseen tags:</b> <span v-for="tag in $props.data['url_info']['citeuseen']['parsedTags']" v-bind:key="tag['originalTag']"> <img :src="tag['icon']" /> {{ tag['category'] }} (from <a :href="`https://en.wikipedia.org/wiki/${ tag['sourcePage'] }`" class="link-general">[[{{ tag['sourcePage'] }}]]</a>) </span>
+        <!-- <div>
+          <span v-if="$props.data && $props.data['url_info']['citeuseen']['parsedTags'].length && $props.data['url_info']['citeuseen']['parsedTags'].length != 0 && !considerLLM">
+            <b>CiteUnseen tags:</b> <span v-for="tag in  $props.data['url_info']['citeuseen']['parsedTags']" v-bind:key="tag['originalTag']"> <img :src="tag['icon']" /> {{ tag['category'] }} (from <a :href="`https://en.wikipedia.org/wiki/${ tag['sourcePage'] }`" class="link-general">[[{{ tag['sourcePage'] }}]]</a>) </span>
           </span>
-        </div>
+        </div> -->
 
         <div class="chip-row">
           <div v-if="$props.data['archive_url'] && !considerLLM">
