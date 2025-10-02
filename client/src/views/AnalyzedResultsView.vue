@@ -73,6 +73,7 @@ export default defineComponent({
         const isCached = ref( false );
         const cachedTimeExists = ref( false );
         const cachedTime = ref( new Date() );
+        const badRequestCount = ref( 0 );
         const currentlySelectedTab = ref( 'all' );
         let selectedTabName = 'all';
         const route = useRoute();
@@ -129,9 +130,10 @@ export default defineComponent({
         const pagename = route.params.articleName;
         const nocache = new URL( location.href ).searchParams.get( 'nocache' );
         const recache = new URL( location.href ).searchParams.get( 'recache' );
+        const forcecache = new URL( location.href ).searchParams.get( 'forcecache' );
 
         async function initData() {
-            const resp = await fetch( `/api/push_analysis/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? recache || Math.random() : 'yes' }` )
+            const resp = await fetch( `/api/push_analysis/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? recache || Math.random() : 'yes' }${ forcecache ? '&forcecache=yes': '' }` )
             const json = await resp.json();
             if ( !json['exists'] ) {
                 showResults.value = true;
@@ -154,7 +156,7 @@ export default defineComponent({
                 erroredOut.value = true;
                 notSuccess.value = true;
             }
-        }, 5 * 61 * 1000 )
+        }, 10 * 60 * 1000 );
 
         async function fetchData( runid: string ) {
             const resp = await fetch( `/api/fetch_analysis/${runid}` );
@@ -163,14 +165,26 @@ export default defineComponent({
                 console.log( totalCitationCount, json.length )
                 setTimeout( () => { 
                     fetchData( runid ).catch( () => {
-                        showResults.value = true;
-                        erroredOut.value = true;
-                    } )
+                        badRequestCount.value += 1;
+                        if ( badRequestCount.value >= 10 ) {
+                            showResults.value = true;
+                            erroredOut.value = true;
+                            notSuccess.value = true;
+                        }
+                    } );
                 }, 2 * 1000 );
             } else {
                 showResults.value = true;
             }
-            document.title = `Results for ${ pagename }`
+            document.title = `Results for ${ pagename }`;
+            if ( isCached.value ) {
+                document.title = `(Cached) Results for ${ pagename }`;
+                if ( totalCitationCount  !== json.length ) {
+                    // This is a cached result, but the count is different, so we need to hard refresh
+                    // and purge the cache for a new run.
+                    window.location.href = `/analyze/${ pagename }?forcecache=yes`;
+                }
+            }
             fetchedData = json;
             totalCount.value = json.length;
             onClickButtonGroup( selectedTabName );

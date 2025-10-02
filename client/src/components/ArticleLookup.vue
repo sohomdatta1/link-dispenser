@@ -25,6 +25,11 @@
 				Check for LLM citation patterns
 		</cdx-checkbox>
 
+		<cdx-checkbox
+			v-model="bypassCache">
+				Bypass cache and force re-analysis
+		</cdx-checkbox>
+
 		<cdx-button
 			:disabled="!selection"
 			@click="onAnalyzeClick"
@@ -46,6 +51,7 @@ export default defineComponent( {
 		const menuItems: Ref<any[]> = ref( [] );
 		const currentSearchTerm = ref( '' );
 		const checkLLM = ref( false );
+		const bypassCache = ref( false );
 
 		function fetchResults( searchTerm: string ) {
 			const params = new URLSearchParams( {
@@ -130,7 +136,8 @@ export default defineComponent( {
 		function onAnalyzeClick() {
 			if ( selection.value ) {
 				const basePath = checkLLM.value ? '/llmanalyze' : '/analyze';
-				document.location.href = `${basePath}/${encodeURIComponent(selection.value)}`;
+				const cacheBypass = bypassCache.value ? new URLSearchParams({ 'nocache': 'yes' }) : '';
+				document.location.href = `${basePath}/${encodeURIComponent(selection.value)}${cacheBypass}`;
 			}
 		}
 
@@ -143,6 +150,7 @@ export default defineComponent( {
 			menuItems,
 			menuConfig,
 			checkLLM,
+			bypassCache,
 			onInput,
 			onLoadMore,
 			onAnalyzeClick

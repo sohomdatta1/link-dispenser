@@ -1,8 +1,11 @@
 import requests as r
 from useragent import USERAGENT
+import os
 
 def isbn_exists_in_openlibrary(isbn: str) -> bool | None:
     isbn = isbn.strip().replace("-", "")
+    s = r.Session()
+    s.cookies.set('session', os.environ.get('OPENLIBRARY_SESSION_COOKIE', ''), domain='.openlibrary.org')
     url = "https://openlibrary.org/api/books"
     params = {
         "bibkeys": f"ISBN:{isbn}",

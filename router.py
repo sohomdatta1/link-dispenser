@@ -35,7 +35,6 @@ def citeunseen(url: str):
 def analyze(article_name: str):
     return analyze_article_and_urls(article_name)
 
-
 @cache.memoize(timeout=82800)
 def cached_push_analysis(article_name: str, _query_params: dict = None):
     return push_analysis(article_name)
@@ -44,6 +43,10 @@ def cached_push_analysis(article_name: str, _query_params: dict = None):
 def push_analysis_handler(article_name: str):
     article_name = article_name.replace('+', ' ')
     query_params = request.args.to_dict()
+
+    if 'forcecache' in query_params:
+        del query_params['forcecache']
+        cache.delete_memoized(cached_push_analysis, article_name, query_params)
 
     cache_key = cached_push_analysis.make_cache_key(
         cached_push_analysis.uncached,
@@ -76,7 +79,6 @@ def index():
     return r
 
 @app.route("/robots.txt")
-
 def robots_txt():
     content = open('robots.txt', encoding='utf-8').read()
     response = make_response(content)

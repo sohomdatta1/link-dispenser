@@ -8,7 +8,7 @@
       <template #title>
         {{ $props.data['title'] }}
 
-        <div class="chip-row" v-if="$props.data['url_info']['desc'] !== 'ok' || ($props.data['hallucinated'] && considerLLM) || (!$props.data['citoid'] && considerLLM) || ($props.data['hallucinated_doi'] && considerLLM) || ($props.data['title_similarity'] < 0.7 && considerLLM)">
+        <div class="chip-row" v-if="($props.data['url_info']['desc'] !== 'ok' && $props.data['url_info']['desc'] !== 'redirect') || ($props.data['hallucinated'] && considerLLM) || (!$props.data['citoid'] && considerLLM) || ($props.data['hallucinated_doi'] && considerLLM) || ($props.data['title_similarity'] < 0.7 && considerLLM)">
           <b>Issue(s):</b>
           <cdx-info-chip v-if="$props.data['url_info']['desc'] !== 'ok' && $props.data['url_info']['desc'] !== 'redirect'">
             URL might be {{ $props.data['url_info']['desc'] }}

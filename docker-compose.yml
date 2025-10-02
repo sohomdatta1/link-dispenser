@@ -15,5 +15,8 @@ services:
       dockerfile: Dockerfile.celery
     environment:
       - DOCKER=TRUE
+      - OPENLIBRARY_SESSION_COOKIE=${OPENLIBRARY_SESSION_COOKIE}
+    env_file:
+      - .env
   redis:
     image: "redis:alpine"
