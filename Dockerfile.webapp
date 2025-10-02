@@ -1,8 +1,8 @@
 FROM node:20 AS frontend-builder
 
-WORKDIR /app
+WORKDIR /client
 
-COPY . .
+COPY ./client . 
 RUN npm install
 RUN npm run build
 
@@ -10,8 +10,13 @@ FROM python:3.12
 
 WORKDIR /app
 
-COPY --from=frontend-builder /app /app
+COPY requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt
 ENV DOCKER=TRUE
+
+COPY . /app
+
+COPY --from=frontend-builder /client /app/client
+
 CMD [ "./scripts/start_gunicorn.sh" ]

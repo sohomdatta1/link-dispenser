@@ -69,6 +69,12 @@
             </span>
         </div>
 
+        <div>
+          <span v-if="$props.data['url_info']['citeuseen']['parsedTags'].length && $props.data['url_info']['citeuseen']['parsedTags'].length != 0 && !considerLLM && false">
+            <b>CiteUnseen tags:</b> <span v-for="tag in $props.data['url_info']['citeuseen']['parsedTags']" v-bind:key="tag['originalTag']"> <img :src="tag['icon']" /> {{ tag['category'] }} (from <a :href="`https://en.wikipedia.org/wiki/${ tag['sourcePage'] }`" class="link-general">[[{{ tag['sourcePage'] }}]]</a>) </span>
+          </span>
+        </div>
+
         <div class="chip-row">
           <div v-if="$props.data['archive_url'] && !considerLLM">
             <b>Archived:</b> <a :href="$props.data['archive_url']" target="_blank" class="link-general">{{ $props.data['archive_url'] }}</a>
@@ -93,7 +99,7 @@
             <b>ISBN:</b> {{ $props.data['isbn'] }} <span class="warn"><cdx-icon :icon="cdxIconAlert"/> Invalid ISBN checksum</span>
           </div>
           <div v-else-if="$props.data['isbn'] && !considerLLM">
-            <b>ISBN:</b> <a :href="`https://openlibrary.org/isbn/${$props.data['isbn']}`">{{ $props.data['isbn'] }}</a>  <cdx-info-chip status="success" v-if="$props.data['isbn_in_openlibrary'] === true">ISBN exists in OpenLibrary</cdx-info-chip>
+            <b>ISBN:</b> <a :href="`https://openlibrary.org/isbn/${$props.data['isbn']}`" target="_blank" class="link-general" v-if="$props.data['isbn_in_openlibrary'] === true">{{ $props.data['isbn'] }}</a><template v-else>{{ $props.data['isbn'] }}</template>  <cdx-info-chip status="success" v-if="$props.data['isbn_in_openlibrary'] === true">ISBN exists in OpenLibrary</cdx-info-chip>
           </div>
           <div v-if="$props.data['doi'] && !considerLLM">
             <b>DOI:</b> <a :href="`${$props.data['doi']}`" target="_blank" class="link-general">{{ $props.data['doi'].replace('https://doi.org/', '') }}</a>
@@ -197,7 +203,8 @@ export default defineComponent({
 
 .link-general {
     color: inherit;
-    text-decoration: none;
+    text-decoration: underline;
+    text-decoration-style: dotted;
 }
 
 .link-general-chip {
