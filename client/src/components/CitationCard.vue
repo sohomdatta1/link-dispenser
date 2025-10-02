@@ -93,7 +93,7 @@
             <b>ISBN:</b> {{ $props.data['isbn'] }} <span class="warn"><cdx-icon :icon="cdxIconAlert"/> Invalid ISBN checksum</span>
           </div>
           <div v-else-if="$props.data['isbn'] && !considerLLM">
-            <b>ISBN:</b> {{ $props.data['isbn'] }} <cdx-info-chip status="success" v-if="$props.data['isbn_in_openlibrary'] === true">ISBN exists in OpenLibrary</cdx-info-chip>
+            <b>ISBN:</b> <a :href="`https://openlibrary.org/isbn/${$props.data['isbn']}`">{{ $props.data['isbn'] }}</a>  <cdx-info-chip status="success" v-if="$props.data['isbn_in_openlibrary'] === true">ISBN exists in OpenLibrary</cdx-info-chip>
           </div>
           <div v-if="$props.data['doi'] && !considerLLM">
             <b>DOI:</b> <a :href="`${$props.data['doi']}`" target="_blank" class="link-general">{{ $props.data['doi'].replace('https://doi.org/', '') }}</a>
