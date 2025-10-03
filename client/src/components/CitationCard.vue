@@ -42,11 +42,14 @@
         <a :href="$props.data['url_info']['url']" target="_blank" class="link-general">
           {{ $props.data['url_info']['url'] }}
         </a>
-        <cdx-info-chip status="notice" v-if="$props.data['url_info']['status'] < 400 &&$props.data['url_info']['status'] !== 1337">
+        <cdx-info-chip status="notice" v-if="$props.data['url_info']['status'] < 400 && $props.data['url_info']['status'] !== 1337">
           HTTP status code: {{ $props.data['url_info']['status'] }}
         </cdx-info-chip>
-        <cdx-info-chip status="warning" v-if="$props.data['url_info']['status'] >= 400 &&$props.data['url_info']['status'] !== 1337">
+        <cdx-info-chip status="warning" v-if="$props.data['url_info']['status'] >= 400 && $props.data['url_info']['status'] !== 1337">
           HTTP status code: {{ $props.data['url_info']['status'] }}
+        </cdx-info-chip>
+        <cdx-info-chip status="error" v-if="$props.data['url_info']['status'] === 1337">
+          URL could not be reached
         </cdx-info-chip>
         <cdx-info-chip status="warning" v-if="$props.data['url_info']['timeout']">
           Request timed out
