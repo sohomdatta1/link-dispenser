@@ -73,7 +73,7 @@ def push_analysis(article_name: str):
             'rid': run_id,
             'computed_on': datetime.datetime.now(datetime.timezone.utc)
         }
-        r.set(REDIS_KEY_PREFIX + run_id + 'article_data', article_name)
+        r.set(REDIS_KEY_PREFIX + str(run_id) + 'article_data', article_name)
 
         return retval
     return {
@@ -81,7 +81,15 @@ def push_analysis(article_name: str):
     }
 
 def get_previously_run_analysis(rid: str):
-    return json.loads(r.get(REDIS_KEY_PREFIX + rid + 'article_data'))
+    data = r.get(REDIS_KEY_PREFIX + rid + 'article_data')
+    if not data:
+        return {
+            'exists': False
+        }
+    return json.loads(data)
+
+def permanent_result_link_exists(rid: str):
+    return r.get(REDIS_KEY_PREFIX + rid + 'article_data') is not None
 
 def fetch_analysis(uuid: str):
     all_data = r.smembers(REDIS_KEY_PREFIX + uuid)

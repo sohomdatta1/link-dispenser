@@ -2,7 +2,7 @@ from flask import Flask, send_from_directory, send_file, request, make_response
 from linkcheck import analyze_url
 from wikiinteractor import analyze_article_and_urls
 from app import flask_app as app, cache
-from jobs import push_analysis, fetch_analysis, get_previously_run_analysis
+from jobs import push_analysis, fetch_analysis, get_previously_run_analysis, permanent_result_link_exists
 from redis_init import rediscl as rcl
 from re import compile as re_compile
 
@@ -63,6 +63,12 @@ def push_analysis_handler(article_name: str):
 @app.route("/api/get_analysis/<uuid>")
 def get_analysis_handler(uuid: str):
     return get_previously_run_analysis(uuid)
+
+@app.route("/api/permanent_result_link_exists/<uuid>")
+def permanent_result_link_exists_handler(uuid: str):
+    return {
+        'exists': permanent_result_link_exists(uuid)
+    }
 
 @app.after_request
 def add_acao_header(response):

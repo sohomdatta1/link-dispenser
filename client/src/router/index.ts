@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import AnalyzedResultsView from '../views/AnalyzedResultsView.vue'
 import LLMResultsView from '@/views/LLMResultsView.vue'
+import AnalysisView from '../views/AnalysisView.vue'
+import LLMAnalysisView from '../views/LLMAnalysisView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +22,16 @@ const router = createRouter({
       path: '/llmanalyze/:articleName(.*)',
       name: 'llmanalyze',
       component: LLMResultsView
+    },
+    {
+      path: '/analysis/:uuid',
+      name: 'analysis',
+      component: AnalysisView
+    },
+    {
+      path: '/llmanalysis/:uuid',
+      name: 'llmanalysis',
+      component: LLMAnalysisView
     },
     {
       path: '/about',

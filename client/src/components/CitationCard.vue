@@ -148,7 +148,7 @@ export default defineComponent({
         considerLLM: Boolean,
     },
     data: () => ( {
-		cdxIconLink,
+        cdxIconLink,
         cdxIconSuccess,
         cdxIconAlert,
         cdxIconError,
