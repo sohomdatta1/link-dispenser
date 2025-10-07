@@ -70,10 +70,10 @@ def push_analysis(article_name: str):
             'exists': article_data['exists'],
             'count': article_data['template_count'],
             'article_name': article_name,
-            'rid': run_id,
-            'computed_on': datetime.datetime.now(datetime.timezone.utc)
+            'rid': str(run_id),
+            'computed_on': datetime.datetime.now(datetime.timezone.utc).isoformat()
         }
-        r.set(REDIS_KEY_PREFIX + str(run_id) + 'article_data', article_name)
+        r.set(REDIS_KEY_PREFIX + str(run_id) + 'article_data', json.dumps(retval))
 
         return retval
     return {

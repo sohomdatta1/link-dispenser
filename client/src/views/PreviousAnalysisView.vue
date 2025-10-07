@@ -9,20 +9,30 @@
     <div v-if="!loading && erroredOut" class="maho-text-wrapper">
         Something definitely went wrong here. Please report this URL to [[en:User talk:Sohom_Datta]] or sohom_#0 on Discord.
     </div>
-    <div v-if="!loading && isCached" class="maho-text-wrapper"><i>This result is cached from a previous run conducted <template v-if="cachedTimeExists"><abbr :title="cachedTime.toUTCString()">{{ formatRelativeTime(cachedTime) }}</abbr></template><template v-else>within the last 24 hours</template>.</i></div>
+    <div v-if="!loading && isCached" class="maho-text-wrapper"><i>You are viewing the archived results from a previous run conducted <template v-if="cachedTimeExists"><abbr :title="cachedTime.toUTCString()">{{ formatRelativeTime(cachedTime) }}</abbr></template><template v-else>within the last 24 hours</template>. To get a fresh run, use <a :href="`/${ isLLMAnalysis ? 'llmanalyze' : 'analyze' }/${ articleName }?nocache=yes`">this link</a>.</i></div>
     <div>
         <template v-if="!loading && !notSuccess && !erroredOut">
             <div>
                 <div class="floating-header">
                     <div>
-                        <h1>Results for <a :href='`https://en.wikipedia.org/wiki/${ articleName }`'>{{ articleName }}</a></h1>
+                        <h1 class="title-of-run-page">Results for <a :href='`https://en.wikipedia.org/wiki/${ articleName }`'>{{ articleName }}</a></h1>
                     </div>
-                    <cdx-toggle-button-group
-                    :model-value="currentlySelectedTab"
-                    :buttons="buttons"
-                    @update:modelValue="onClickButtonGroup"
-                >
-                    </cdx-toggle-button-group>
+                    <div class="suggested-filters">
+                        Suggested filters:
+                        <cdx-toggle-button-group
+                            :model-value="currentlySelectedTab"
+                            :buttons="buttons"
+                            @update:modelValue="onClickButtonGroup"
+                            class="filter-button-group"
+                        >
+                            <template #default="{ button }">
+                            {{ button.originalLabel }}
+                            <span>
+                                ({{ button.number }})
+                            </span>
+                        </template>
+                        </cdx-toggle-button-group>
+                    </div>
                     <br>
                     <div v-if="actualData.length !== 0 && currentlySelectedTab !== 'all'">
                         <div>{{ actualData.length }} out of {{ totalCount }} URLs in the article that meet this criteria.</div>
@@ -128,31 +138,31 @@ export default defineComponent({
                 value: 'redirect'
             },
             {
-                originalLabel: 'Potentially spammy links',
+                originalLabel: 'Potentially spammy',
                 label: 'Potentially spammy links',
                 number: 0,
                 value: 'spammy'
             },
             {
-                originalLabel: 'Links that could be down',
+                originalLabel: 'Down',
                 label: 'Links that could be down',
                 number: 0,
                 value: 'down'
             },
             {
-                originalLabel: 'Links that could be dead',
+                originalLabel: 'Dead',
                 label: 'Links that could be dead',
                 number: 0,
                 value: 'dead'
             },
             {
-                originalLabel: 'Already has a archive.org link',
+                originalLabel: 'Archived',
                 label: 'Already has a archive.org link',
                 number: 0,
                 value: 'archive'
             },
             {
-                originalLabel: 'Does not have a archive.org link',
+                originalLabel: 'No archive.org link',
                 label: 'Does not have a archive.org link',
                 number: 0,
                 value: 'notarchive'
@@ -350,4 +360,35 @@ export default defineComponent({
 .cdx-docs-link {
 	.cdx-mixin-link();
 }
+
+.title-of-run-page {
+    width: fit-content;
+    margin: 0;
+    font-size: @font-size-xx-large;
+    font-weight: bold;
+    margin-top: @spacing-25;
+    > a {
+        .cdx-mixin-link();
+    }
+}
+
+.suggested-filters {
+    margin-top: @spacing-100;
+}
+
+.maho-text-wrapper a {
+    .cdx-mixin-link();
+}
+
+.filter-button-group {
+    margin-top: @spacing-50;
+    > .cdx-toggle-button {
+        margin-right: @spacing-25;
+    }
+}
+
+.citation-card-data {
+    margin-bottom: @spacing-25;
+}
+
 </style>

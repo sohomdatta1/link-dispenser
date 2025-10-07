@@ -3,7 +3,7 @@
     <cdx-card
       v-if="$props.data"
       :icon="iconForDesc($props.data['url_info']['desc'])"
-      :class="`card-type-${$props.data['url_info']['desc']}`"
+      :class="`card-type-${$props.data['url_info']['desc']} card-data`"
     >
       <template #title>
         {{ $props.data['title'] }}
@@ -38,30 +38,33 @@
       </template>
 
       <template #description>
-        <cdx-icon :icon="cdxIconLink" class="link-icon" />
-        <a :href="$props.data['url_info']['url']" target="_blank" class="link-general">
-          {{ $props.data['url_info']['url'] }}
-        </a>
-        <cdx-info-chip status="notice" v-if="$props.data['url_info']['status'] < 400 && $props.data['url_info']['status'] !== 1337">
-          HTTP status code: {{ $props.data['url_info']['status'] }}
-        </cdx-info-chip>
-        <cdx-info-chip status="warning" v-if="$props.data['url_info']['status'] >= 400 && $props.data['url_info']['status'] !== 1337">
-          HTTP status code: {{ $props.data['url_info']['status'] }}
-        </cdx-info-chip>
-        <cdx-info-chip status="error" v-if="$props.data['url_info']['status'] === 1337">
-          URL could not be reached
-        </cdx-info-chip>
-        <cdx-info-chip status="warning" v-if="$props.data['url_info']['timeout']">
-          Request timed out
-        </cdx-info-chip>
-        <cdx-info-chip status="warning" v-if="$props.data['url_info']['blocked']">
-          Requests blocked by site owner
-        </cdx-info-chip>
+        <div class="row-align">
+           <cdx-icon :icon="cdxIconLink" class="link-icon" />
+          <a :href="$props.data['url_info']['url']" target="_blank" class="link-general">
+            {{ $props.data['url_info']['url'] }}
+          </a>
+          <cdx-info-chip status="notice" v-if="$props.data['url_info']['status'] < 400 && $props.data['url_info']['status'] !== 1337">
+            HTTP status code: {{ $props.data['url_info']['status'] }}
+          </cdx-info-chip>
+          <cdx-info-chip status="warning" v-if="$props.data['url_info']['status'] >= 400 && $props.data['url_info']['status'] !== 1337">
+            HTTP status code: {{ $props.data['url_info']['status'] }}
+          </cdx-info-chip>
+          <cdx-info-chip status="error" v-if="$props.data['url_info']['status'] === 1337">
+            URL could not be reached
+          </cdx-info-chip>
+          <cdx-info-chip status="warning" v-if="$props.data['url_info']['timeout']">
+            Request timed out
+          </cdx-info-chip>
+          <cdx-info-chip status="warning" v-if="$props.data['url_info']['blocked']">
+            Requests blocked by site owner
+          </cdx-info-chip>
+        </div>
+
         <TemplateURLStatus
-          v-if="$props.data['template_url_status'] && $props.data['url_info']['desc'] && !considerLLM"
-          :templateUrlStatus="$props.data['template_url_status']"
-          :desc="$props.data['url_info']['desc']"
-        />
+            v-if="$props.data['template_url_status'] && $props.data['url_info']['desc'] && !considerLLM"
+            :templateUrlStatus="$props.data['template_url_status']"
+            :desc="$props.data['url_info']['desc']"
+          />
 
         <div>
             <span v-for="url in $props.data['url_info']['history']" :key="url['url']">
@@ -173,8 +176,10 @@ export default defineComponent({
 
 <style lang="less">
 @import '@wikimedia/codex-design-tokens/theme-wikimedia-ui.less';
-.card-type-ok > .cdx-icon {
-    color: @color-icon-success;
+
+.row-align {
+    display: flex;
+    align-items: center;
 }
 
 .warn {
@@ -184,20 +189,42 @@ export default defineComponent({
     }
 }
 
-.card-type-down > .cdx-icon {
+.card-data {
+  border-left: 4px  solid #000;
+}
+
+.card-type-ok {
+    border-left-color: @color-icon-success;
+     > .cdx-icon {
+      color: @color-icon-success;
+    }
+}
+
+.card-type-down {
+  border-left-color: @color-icon-warning;
+  > .cdx-icon {
     color: @color-icon-warning;
+  }
 }
 
-.card-type-dead > .cdx-icon {
-    color: @color-destructive;
+.card-type-dead  {
+  border-left-color: @color-destructive;
+    > .cdx-icon {
+      color: @color-destructive;
+  }
 }
-
-.card-type-spammy > .cdx-icon {
+.card-type-spammy {
+    border-left-color: @color-icon-warning;
+    > .cdx-icon {
     color: @color-icon-warning;
+  }
 }
 
-.card-type-redirect > .cdx-icon {
+.card-type-redirect {
+  border-left-color: @color-progressive;
+  > .cdx-icon {
     color: @color-progressive;
+  }
 }
 
 .link-icon {

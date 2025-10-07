@@ -17,21 +17,30 @@
                 <div class="floating-header">
                     <div class="title-and-link-wrapper">
                         <h1 class="title-of-run-page">Results for <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a></h1>
-                        <div v-if="showResults && !erroredOut && permanentLink" class="permanent-link-wrapper">
+                        <div v-if="!erroredOut && permanentLink" class="permanent-link-wrapper">
                             <div class="link-container">
-                                <span><b>Permanent link (that you can use onwiki):</b> <a :href="permanentLink" class="link-url cdx-docs-link" target="_blank" rel="noopener noreferrer">{{ permanentLink }}</a></span>
+                                <a :href="permanentLink" class="link-url cdx-docs-link" target="_blank" rel="noopener noreferrer">{{ permanentLink }}</a>
                             </div>
-                            <cdx-button v-if="copySuccess" weight="quiet" class="copy-url-button"> <cdx-icon :icon="cdxIconCheck" /> Copied URL</cdx-button>
-                            <cdx-button @click="copyToClipboard" v-else weight="quiet" class="copy-url-button"> <cdx-icon :icon="cdxIconCopy" /> Copy URL</cdx-button>
+                            <cdx-button @click="copyToClipboard" weight="quiet"  class="copy-url-button"> <template v-if="copySuccess"><cdx-icon :icon="cdxIconCheck" /> Copied permanent URL to this run</template> <template v-else> <cdx-icon :icon="cdxIconCopy" /> Copy permanent URL to this run</template></cdx-button>
+                        </div>
+                        <div v-else class="permanent-link-wrapper">
+                            <i>Generating permanent link...</i>
                         </div>
                     </div>
-                    <div>
-                        Suggested filters:&nbsp;
+                    <div class="suggested-filters">
+                        Suggested filters:
                         <cdx-toggle-button-group
                             :model-value="currentlySelectedTab"
                             :buttons="buttons"
                             @update:modelValue="onClickButtonGroup"
+                            class="filter-button-group"
                         >
+                            <template #default="{ button }">
+                            {{ button.originalLabel }}
+                            <span>
+                                ({{ button.number }})
+                            </span>
+                        </template>
                         </cdx-toggle-button-group>
                     </div>
                     <br>
@@ -45,9 +54,8 @@
                         <cdx-message type="warning" inline>No URLs in the article that meet this criteria.</cdx-message>
                     </div>
                 </div>
-                <br>
                 <div v-for="data in actualData" :key="data.uid">
-                    <citation-card v-bind:data="data" :considerLLM="isLLMAnalysis"></citation-card>
+                    <citation-card v-bind:data="data" :considerLLM="isLLMAnalysis" class="citation-card-data"></citation-card>
                 </div>
             </div>
         </template>
@@ -151,31 +159,31 @@ export default defineComponent({
                 value: 'redirect'
             },
             {
-                originalLabel: 'Potentially spammy links',
-                label: 'Potentially spammy links',
+                originalLabel: 'Potentially spammy',
+                label: 'Potentially spammy',
                 number: 0,
                 value: 'spammy'
             },
             {
-                originalLabel: 'Links that could be down',
+                originalLabel: 'Down',
                 label: 'Links that could be down',
                 number: 0,
                 value: 'down'
             },
             {
-                originalLabel: 'Links that could be dead',
+                originalLabel: 'Dead',
                 label: 'Links that could be dead',
                 number: 0,
                 value: 'dead'
             },
             {
-                originalLabel: 'Already has a archive.org link',
-                label: 'Already has a archive.org link',
+                originalLabel: 'Archived',
+                label: 'Archived',
                 number: 0,
                 value: 'archive'
             },
             {
-                originalLabel: 'Does not have a archive.org link',
+                originalLabel: 'No archive.org link',
                 label: 'Does not have a archive.org link',
                 number: 0,
                 value: 'notarchive'
@@ -231,7 +239,7 @@ export default defineComponent({
             } else {
                 showResults.value = true;
             }
-            document.title = `Results for ${ pagename }`;
+            document.title = `(Cached) Results for ${ pagename }`;
             if ( isCached.value ) {
                 document.title = `(Cached) Results for ${ pagename }`;
                 if ( totalCitationCount  !== json.length ) {
@@ -436,15 +444,20 @@ export default defineComponent({
     flex-wrap: wrap;
 }
 
-.link-url {
-    color: @color-link;
-    text-decoration: none;
-    font-family: @font-family-monospace;
-    font-size: @font-size-small;
+.link-container a {
+    display: inline-block;
+    border: @border-subtle;
+    padding: @spacing-50;
 }
 
-.copy-url-button {
+.link-url {
+    .cdx-mixin-link();
+    font-family: @font-family-monospace;
+}
+
+.copy-url-button.cdx-button.cdx-button--weight-quiet, .cdx-button.cdx-button--fake-button--enabled.cdx-button--weight-quiet {
     align-self: flex-end;
+    background: @background-color-neutral-subtle;
 }
 
 .link-url:hover {
@@ -460,6 +473,21 @@ export default defineComponent({
     > a {
         .cdx-mixin-link();
     }
+}
+
+.maho-text-wrapper > div > a {
+    .cdx-mixin-link();
+}
+
+.filter-button-group {
+    margin-top: @spacing-50;
+    > .cdx-toggle-button {
+        margin-right: @spacing-25;
+    }
+}
+
+.citation-card-data {
+    margin-bottom: @spacing-25;
 }
 
 .cdx-docs-link {
