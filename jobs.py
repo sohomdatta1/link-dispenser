@@ -66,16 +66,22 @@ def push_analysis(article_name: str):
                 citation,
                 count,
                 run_id)
-        return {
+        retval = {
             'exists': article_data['exists'],
             'count': article_data['template_count'],
+            'article_name': article_name,
             'rid': run_id,
             'computed_on': datetime.datetime.now(datetime.timezone.utc)
         }
+        r.set(REDIS_KEY_PREFIX + run_id + 'article_data', article_name)
+
+        return retval
     return {
         'exists': article_data['exists']
     }
 
+def get_previously_run_analysis(rid: str):
+    return json.loads(r.get(REDIS_KEY_PREFIX + rid + 'article_data'))
 
 def fetch_analysis(uuid: str):
     all_data = r.smembers(REDIS_KEY_PREFIX + uuid)
