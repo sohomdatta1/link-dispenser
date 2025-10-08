@@ -5,10 +5,13 @@ from app import flask_app as app, cache
 from jobs import push_analysis, fetch_analysis, get_previously_run_analysis, permanent_result_link_exists
 from redis_init import rediscl as rcl
 from re import compile as re_compile
+from cloudflare_bot_auth import init_bot_auth_middleware
 
 WIKIMEDIA_ORIGIN_PATTERN = re_compile(
     r"^https:\/\/([a-z\-]+\.)?(wikipedia|wikimedia|wiktionary|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wikidata|mediawiki|wikimediafoundation)\.org$"
 )
+
+init_bot_auth_middleware(app)
 
 @app.route("/api/lookup_url/<url>")
 @cache.cached(timeout=1800, query_string=True)

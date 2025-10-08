@@ -8,3 +8,5 @@ pywikibot*
 env/
 throttle.ctrl
 report-bot/
+keys/
+.env
