@@ -7,6 +7,9 @@ services:
       - ./client:/app/client
     environment:
       - DOCKER=TRUE
+      - BOT_AUTH_JWKS_DATA=${BOT_AUTH_JWKS_DATA}
+    env_file:
+      - .env
     ports:
       - 8000:8000
   celery:
@@ -16,6 +19,7 @@ services:
     environment:
       - DOCKER=TRUE
       - OPENLIBRARY_SESSION_COOKIE=${OPENLIBRARY_SESSION_COOKIE}
+      - BOT_AUTH_JWKS_DATA=${BOT_AUTH_JWKS_DATA}
     env_file:
       - .env
   redis:

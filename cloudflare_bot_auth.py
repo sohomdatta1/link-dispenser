@@ -1,5 +1,7 @@
+import datetime
 import os, json, time, base64, hashlib
 from flask import Flask, Response, request
+from requests import Request
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from http_message_signatures import HTTPMessageSigner, HTTPSignatureKeyResolver, algorithms
 
@@ -38,20 +40,22 @@ def init_bot_auth_middleware(app: Flask):
                 "x": jwk["x"]
             }]
         })
-        created = int(time.time())
-        expires = created + 300  # 5 minutes?
+        created = datetime.datetime.now(datetime.timezone.utc)
+        expires = created + datetime.timedelta(minutes=5)
 
         resolver = SingleKeyResolver(priv)
         signer = HTTPMessageSigner(signature_algorithm=algorithms.ED25519, key_resolver=resolver)
-        fake_req = request._get_current_object()
+        fake_req = Request("GET", f"https://{request.host}/.well-known/http-message-signatures-directory")
         fake_req.headers["Content-Type"] = "application/http-message-signatures-directory+json"
+        for k, v in request.headers.items():
+            fake_req.headers[k] = v
 
         signer.sign(
             fake_req,
             key_id=key_id,
             covered_component_ids=("@authority",),
-            created=time.gmtime(created),
-            expires=time.gmtime(expires),
+            created=created,
+            expires=expires,
             tag="http-message-signatures-directory"
         )
 
