@@ -2,7 +2,12 @@ from flask import Flask, send_from_directory, send_file, request, make_response
 from linkcheck import analyze_url
 from wikiinteractor import analyze_article_and_urls
 from app import flask_app as app, cache
-from jobs import push_analysis, fetch_analysis, get_previously_run_analysis, permanent_result_link_exists
+from jobs import (
+    push_analysis,
+    fetch_analysis,
+    get_previously_run_analysis,
+    permanent_result_link_exists,
+)
 from redis_init import rediscl as rcl
 from re import compile as re_compile
 from cloudflare_bot_auth import init_bot_auth_middleware
@@ -15,23 +20,27 @@ WIKIMEDIA_ORIGIN_PATTERN = re_compile(
 init_bot_auth_middleware(app)
 register_auth_routes(app)
 
+
 @app.route("/api/lookup_url/<url>")
 @cache.cached(timeout=1800, query_string=True)
 def lookup_url(url: str):
     return analyze_url(url)
+
 
 @app.route("/api/healthz")
 def healthz():
     try:
         rcl.ping()
     except Exception as _:
-        return 500, 'BORKEN!'
-    return 'OK'
+        return 500, "BORKEN!"
+    return "OK"
+
 
 @app.route("/api/citeunseen/<path:url>")
 @cache.cached(timeout=1800, query_string=True)
 def citeunseen(url: str):
     from citeuseen import annotate_url as annotate_url_with_citeunseen_data
+
     return annotate_url_with_citeunseen_data(url)
 
 
@@ -41,43 +50,45 @@ def citeunseen(url: str):
 def analyze(article_name: str):
     return analyze_article_and_urls(article_name)
 
+
 @cache.memoize(timeout=82800)
 def cached_push_analysis(article_name: str, _query_params: dict = None):
     return push_analysis(article_name)
 
+
 @app.route("/api/push_analysis/<path:article_name>")
 @login_required
 def push_analysis_handler(article_name: str):
-    article_name = article_name.replace('+', ' ')
+    article_name = article_name.replace("+", " ")
     query_params = request.args.to_dict()
 
-    if 'forcecache' in query_params:
-        del query_params['forcecache']
+    if "forcecache" in query_params:
+        del query_params["forcecache"]
         cache.delete_memoized(cached_push_analysis, article_name, query_params)
 
     cache_key = cached_push_analysis.make_cache_key(
-        cached_push_analysis.uncached,
-        *[article_name, query_params]
+        cached_push_analysis.uncached, *[article_name, query_params]
     )
 
     cached_hit = cache.get(cache_key) is not None
 
     result = cached_push_analysis(article_name, query_params)
-    result['cached'] = cached_hit
+    result["cached"] = cached_hit
 
     return make_response(result)
+
 
 @app.route("/api/get_analysis/<uuid>")
 @login_required
 def get_analysis_handler(uuid: str):
     return get_previously_run_analysis(uuid)
 
+
 @app.route("/api/permanent_result_link_exists/<uuid>")
 @login_required
 def permanent_result_link_exists_handler(uuid: str):
-    return {
-        'exists': permanent_result_link_exists(uuid)
-    }
+    return {"exists": permanent_result_link_exists(uuid)}
+
 
 @app.after_request
 def add_acao_header(response):
@@ -87,39 +98,41 @@ def add_acao_header(response):
         response.headers["Vary"] = "Origin"
     return response
 
+
 @app.route("/api/fetch_analysis/<uuid>")
 @login_required
 def fetch_analysis_handler(uuid: str):
     return fetch_analysis(uuid)
 
+
 @app.route("/")
-@login_required
 def index():
-    r = send_file('./client/dist/index.html')
-    r.headers['Cache-Control'] = 'max-age=604800'
+    r = send_file("./client/dist/index.html")
+    r.headers["Cache-Control"] = "max-age=604800"
     return r
+
 
 @app.route("/robots.txt")
 def robots_txt():
-    content = open('robots.txt', encoding='utf-8').read()
+    content = open("robots.txt", encoding="utf-8").read()
     response = make_response(content)
     response.headers["Content-Type"] = "text/plain, charset=utf-8"
     return response
 
+
 @app.route("/<path:filename>")
 def serve_other_files(filename: str):
-    r = send_from_directory('./client/dist', filename)
-    r.headers['Cache-Control'] = 'max-age=604800'
+    r = send_from_directory("./client/dist", filename)
+    r.headers["Cache-Control"] = "max-age=604800"
     return r
 
 
 @app.errorhandler(404)
-@login_required
 def page_not_found(_):
-    r = send_file('./client/dist/index.html')
-    r.headers['Cache-Control'] = 'max-age=604800'
+    r = send_file("./client/dist/index.html")
+    r.headers["Cache-Control"] = "max-age=604800"
     return r
 
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=1238)
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=1238)

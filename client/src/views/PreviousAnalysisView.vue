@@ -175,7 +175,7 @@ export default defineComponent({
                 // First check if the permanent link exists
                 const existsResp = await fetch(`/api/permanent_result_link_exists/${uuid}`);
                 if (existsResp.status === 401) {
-                    window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                    window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
                     return;
                 }
                 const existsJson = await existsResp.json();
@@ -189,7 +189,7 @@ export default defineComponent({
                 // Get the article data
                 const articleResp = await fetch(`/api/get_analysis/${uuid}`);
                 if (articleResp.status === 401) {
-                    window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                    window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
                     return;
                 }
                 const articleJson = await articleResp.json();
@@ -205,7 +205,7 @@ export default defineComponent({
                 // Get the analysis data
                 const dataResp = await fetch(`/api/fetch_analysis/${uuid}`);
                 if (dataResp.status === 401) {
-                    window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                    window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
                     return;
                 }
                 const dataJson = await dataResp.json();

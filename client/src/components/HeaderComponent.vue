@@ -1,14 +1,15 @@
 <template>
     <nav class="nav">
-        <router-link class="active" to="/" target="_blank">
+        <router-link class="active" to="/">
             <cdx-icon :icon="cdxIconLink"></cdx-icon>
             link-dispenser
         </router-link>
-        <button v-if="!isAuthenticated" class="right auth-button" type="button" @click="startLogin">Log in</button>
-        <button v-else class="right auth-button" type="button" @click="startLogout">Log out</button>
-        <a class="right" href="https://en.wikipedia.org/wiki/WP:LINKDISP" target="_blank"><small>(docs)</small></a>
+        <button v-if="isAuthenticated" class="right auth-button" type="button" @click="startLogout"><small>Log out</small></button>
+        <a v-if="isAuthenticated" class="user-name" href="https://en.wikipedia.org/wiki/Special:MyPage"><small>{{ user }}</small></a>
+        <button v-else class="right auth-button" type="button" @click="startLogin"><small>Log in</small></button>
         <a class="right less-link-padding" href="https://gitlab.wikimedia.org/toolforge-repos/link-dispenser" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/3/35/GitLab_icon.svg" class="right-icon-img" /></a>
         <a class="right less-link-padding" href="https://phabricator.wikimedia.org/maniphest/task/edit/form/43/?projects=Tool-link-dispenser&subscribers=Soda" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/1/10/Ic_bug_report_48px.svg" class="right-icon-img"></a>
+        <a class="right" href="https://en.wikipedia.org/wiki/WP:LINKDISP" target="_blank"><small>(docs)</small></a>
     </nav>
 </template>
 
@@ -21,7 +22,8 @@ import { cdxIconLink } from '@wikimedia/codex-icons';
 export default defineComponent({
     data: () => ( {
         cdxIconLink,
-        isAuthenticated: false
+        isAuthenticated: false,
+        user: ''
     }),
     components: {
         CdxIcon,
@@ -33,12 +35,17 @@ export default defineComponent({
                 const response = await fetch('/api/whoami');
                 const json = await response.json();
                 this.isAuthenticated = Boolean(json?.authenticated);
+                this.user = json?.user?.username || '';
             } catch (_) {
                 this.isAuthenticated = false;
             }
         },
         startLogin() {
-            const next = window.location.pathname + window.location.search;
+            const url = new URL(window.location.href);
+            const fromQuery = url.searchParams.get('next');
+            const next = (fromQuery && fromQuery.startsWith('/') && !fromQuery.startsWith('//') && !fromQuery.includes('://'))
+                ? fromQuery
+                : window.location.pathname + window.location.search;
             window.location.href = `/login?next=${encodeURIComponent(next)}`;
         },
         startLogout() {
@@ -64,9 +71,8 @@ export default defineComponent({
     height: @size-150;
   }
 
-  .auth-button {
+  .auth-button, .user-name {
     float: right;
-    color: @color-progressive;
     background: none;
     border: none;
     padding: @spacing-100 @spacing-75;
@@ -75,12 +81,20 @@ export default defineComponent({
     font-family: @font-family-monospace;
   }
 
+  .auth-button {
+    background: @background-color-base;
+    color: @color-progressive;;
+  }
+
   .auth-button:hover {
     color: @color-progressive--hover;
   }
 
-    a:not(.less-link-padding) {
+    a:not(.user-name):not(.auth-button) {
         float: left;
+    }
+
+    a:not(.less-link-padding) {
         color: @color-base;
         text-align: center;
         padding: @spacing-100 @spacing-75;

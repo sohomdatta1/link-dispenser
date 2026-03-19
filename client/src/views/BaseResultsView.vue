@@ -198,7 +198,7 @@ export default defineComponent({
         async function initData() {
             const resp = await fetch( `/api/push_analysis/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? recache || Math.random() : 'yes' }${ forcecache ? '&forcecache=yes': '' }` )
             if (resp.status === 401) {
-                window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
                 return;
             }
             const json = await resp.json();
@@ -228,7 +228,7 @@ export default defineComponent({
         async function fetchData( runid: string ) {
             const resp = await fetch( `/api/fetch_analysis/${runid}` );
             if (resp.status === 401) {
-                window.location.href = `/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+                window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
                 return;
             }
             const json = await resp.json();
