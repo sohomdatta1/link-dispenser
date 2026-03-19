@@ -1,7 +1,9 @@
 from flask import Flask
 from celery_init import celery_init_app
-from redis_init import redis_url, REDIS_KEY_PREFIX
+from redis_init import redis_url, REDIS_KEY_PREFIX, rediscl
 from flask_caching import Cache
+from flask_session import Session
+import os
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -19,7 +21,16 @@ def create_app() -> Flask:
         ),
     )
     app.config.from_prefixed_env()
+    app.secret_key = os.getenv('SECRET_KEY', os.urandom(24))
+    app.config.setdefault('SESSION_TYPE', 'redis')
+    app.config.setdefault('SESSION_REDIS', rediscl)
+    app.config.setdefault('SESSION_PERMANENT', False)
+    app.config.setdefault('SESSION_USE_SIGNER', True)
+    app.config.setdefault('SESSION_COOKIE_SAMESITE', 'Lax')
+    app.config.setdefault('SESSION_COOKIE_HTTPONLY', True)
+    app.config.setdefault('SESSION_COOKIE_SECURE', 'NOTDEV' in os.environ)
     celery_init_app(app)
+    Session(app)
     return app
 
 flask_app = create_app()

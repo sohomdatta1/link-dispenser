@@ -167,7 +167,7 @@ def could_be_spammy(url_resp: dict):
 def first_registered_date(url: str) -> str:
     try:
         u = parse_url(url)
-        domain = u.netloc.split(':')[0]  # Remove port if present
+        domain = u.netloc.split(':')[0]
         response = r.get(f'https://crt.sh/?q={domain}&output=json', headers=headers, timeout=10)
         response.raise_for_status()
         certs = response.json()

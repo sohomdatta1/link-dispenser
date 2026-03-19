@@ -6,12 +6,14 @@ from jobs import push_analysis, fetch_analysis, get_previously_run_analysis, per
 from redis_init import rediscl as rcl
 from re import compile as re_compile
 from cloudflare_bot_auth import init_bot_auth_middleware
+from auth import register_auth_routes, login_required
 
 WIKIMEDIA_ORIGIN_PATTERN = re_compile(
     r"^https:\/\/([a-z\-]+\.)?(wikipedia|wikimedia|wiktionary|wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wikidata|mediawiki|wikimediafoundation)\.org$"
 )
 
 init_bot_auth_middleware(app)
+register_auth_routes(app)
 
 @app.route("/api/lookup_url/<url>")
 @cache.cached(timeout=1800, query_string=True)
@@ -35,6 +37,7 @@ def citeunseen(url: str):
 
 @app.route("/api/analyze/<path:article_name>")
 @cache.cached(timeout=1800, query_string=True)
+@login_required
 def analyze(article_name: str):
     return analyze_article_and_urls(article_name)
 
@@ -43,6 +46,7 @@ def cached_push_analysis(article_name: str, _query_params: dict = None):
     return push_analysis(article_name)
 
 @app.route("/api/push_analysis/<path:article_name>")
+@login_required
 def push_analysis_handler(article_name: str):
     article_name = article_name.replace('+', ' ')
     query_params = request.args.to_dict()
@@ -64,10 +68,12 @@ def push_analysis_handler(article_name: str):
     return make_response(result)
 
 @app.route("/api/get_analysis/<uuid>")
+@login_required
 def get_analysis_handler(uuid: str):
     return get_previously_run_analysis(uuid)
 
 @app.route("/api/permanent_result_link_exists/<uuid>")
+@login_required
 def permanent_result_link_exists_handler(uuid: str):
     return {
         'exists': permanent_result_link_exists(uuid)
@@ -82,10 +88,12 @@ def add_acao_header(response):
     return response
 
 @app.route("/api/fetch_analysis/<uuid>")
+@login_required
 def fetch_analysis_handler(uuid: str):
     return fetch_analysis(uuid)
 
 @app.route("/")
+@login_required
 def index():
     r = send_file('./client/dist/index.html')
     r.headers['Cache-Control'] = 'max-age=604800'
@@ -106,6 +114,7 @@ def serve_other_files(filename: str):
 
 
 @app.errorhandler(404)
+@login_required
 def page_not_found(_):
     r = send_file('./client/dist/index.html')
     r.headers['Cache-Control'] = 'max-age=604800'
