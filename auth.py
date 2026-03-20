@@ -60,7 +60,7 @@ def _fetch_profile(oauth_client) -> Optional[dict]:
         return None
     response = oauth_client.get(OAUTH_PROFILE_URL, token=session["token"])
     if response.status_code != 200:
-        print(f"Failed to fetch profile: {response.status_code} {response.text}")
+        print(f"Failed to fetch profile: {response.status_code} {response.text}", flush=True)
         return None
     return response.json()
 
@@ -82,6 +82,7 @@ def register_auth_routes(app):
         token = oauth.wikimedia.authorize_access_token()
         session["token"] = token
         profile = _fetch_profile(oauth.wikimedia)
+        print(profile, "token" in session, flush=True)
         if profile:
             session["user"] = profile
         else:
