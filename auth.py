@@ -80,9 +80,9 @@ def register_auth_routes(app):
     @app.route("/auth/callback")
     def auth_callback():
         token = oauth.wikimedia.authorize_access_token()
+        print(f"Received OAuth token: {token}", flush=True)
         session["token"] = token
         profile = _fetch_profile(oauth.wikimedia)
-        print(profile, "token" in session, flush=True)
         if profile:
             session["user"] = profile
         else:
