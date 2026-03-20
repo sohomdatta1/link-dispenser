@@ -60,6 +60,7 @@ def _fetch_profile(oauth_client) -> Optional[dict]:
         return None
     response = oauth_client.get(OAUTH_PROFILE_URL, token=session["token"])
     if response.status_code != 200:
+        print(f"Failed to fetch profile: {response.status_code} {response.text}")
         return None
     return response.json()
 
