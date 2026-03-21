@@ -4,6 +4,7 @@ from typing import Optional
 
 from authlib.integrations.flask_client import OAuth
 from flask import Response, jsonify, redirect, request, session, url_for
+from useragent import USERAGENT
 
 OAUTH_AUTHORIZE_URL = os.getenv(
     "WIKIMEDIA_OAUTH_AUTHORIZE_URL",
@@ -58,9 +59,10 @@ def login_required(func):
 def _fetch_profile(oauth_client) -> Optional[dict]:
     if "token" not in session:
         return None
-    response = oauth_client.get(OAUTH_PROFILE_URL, token=session["token"])
+    response = oauth_client.get(OAUTH_PROFILE_URL, token=session["token"], headers={
+        "User-Agent": USERAGENT
+    })
     if response.status_code != 200:
-        print(f"Failed to fetch profile: {response.status_code} {response.text}", flush=True)
         return None
     return response.json()
 
@@ -80,7 +82,6 @@ def register_auth_routes(app):
     @app.route("/auth/callback")
     def auth_callback():
         token = oauth.wikimedia.authorize_access_token()
-        print(f"Received OAuth token: {token}", flush=True)
         session["token"] = token
         profile = _fetch_profile(oauth.wikimedia)
         if profile:
