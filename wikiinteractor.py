@@ -41,7 +41,7 @@ def get_article_text(article_name, lang='en'):
             "formatversion": "2"
         },
         headers={
-            'User-Agent': 'Wikimedia-Toolforge-Link-Dispenser/1.0'
+            'User-Agent': USERAGENT
         },
         timeout=10)
     respjson = resp.json()

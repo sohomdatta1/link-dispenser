@@ -67,7 +67,7 @@ export default defineComponent( {
 				"origin": "*"
 			} );
 
-			return fetch( `https://en.wikipedia.org/w/api.php?${ params.toString() }` )
+			return fetch( `https://en.wikipedia.org/w/api.php?${ params.toString() }`, { 'headers': { 'Api-User-Agent': 'Wikimedia-Toolforge-Link-Dispenser/1.0' } } )
 				.then( ( response ) => response.json() );
 		}
 
