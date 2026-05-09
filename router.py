@@ -52,27 +52,46 @@ def analyze(article_name: str):
 
 
 @cache.memoize(timeout=82800)
-def cached_push_analysis(article_name: str, _query_params: dict = None):
-    return push_analysis(article_name)
-
+def cached_push_analysis(article_name: str, language: str, _query_params: dict = None):
+    return push_analysis(article_name, language)
 
 @app.route("/api/push_analysis/<path:article_name>")
 @login_required
-def push_analysis_handler(article_name: str):
-    article_name = article_name.replace("+", " ")
+def push_analysis_handler_legacy(article_name: str):
+    language = 'en'
     query_params = request.args.to_dict()
 
     if "forcecache" in query_params:
         del query_params["forcecache"]
-        cache.delete_memoized(cached_push_analysis, article_name, query_params)
+        cache.delete_memoized(cached_push_analysis, article_name, language, query_params)
 
     cache_key = cached_push_analysis.make_cache_key(
-        cached_push_analysis.uncached, *[article_name, query_params]
+        cached_push_analysis.uncached, *[article_name, language, query_params]
     )
 
     cached_hit = cache.get(cache_key) is not None
 
-    result = cached_push_analysis(article_name, query_params)
+    result = cached_push_analysis(article_name, language, query_params)
+    result["cached"] = cached_hit
+
+    return make_response(result)
+
+@app.route("/api/push_analysis/<string:language>/<path:article_name>")
+@login_required
+def push_analysis_handler(article_name: str, language: str = 'en'):
+    query_params = request.args.to_dict()
+
+    if "forcecache" in query_params:
+        del query_params["forcecache"]
+        cache.delete_memoized(cached_push_analysis, article_name, language, query_params)
+
+    cache_key = cached_push_analysis.make_cache_key(
+        cached_push_analysis.uncached, *[article_name, language, query_params]
+    )
+
+    cached_hit = cache.get(cache_key) is not None
+
+    result = cached_push_analysis(article_name, language, query_params)
     result["cached"] = cached_hit
 
     return make_response(result)

@@ -23,7 +23,7 @@ Flask-Caching==2.1.0
 Flask-Session==0.6.0
 Flask-SQLAlchemy==3.1.1
 greenlet==3.0.3
-gunicorn==21.2.0
+gunicorn==22.0.0
 hiredis==2.3.2
 http-message-signatures==1.0.0
 idna==3.6

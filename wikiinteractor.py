@@ -6,7 +6,7 @@ import datetime
 
 from linkcheck import analyze_url
 
-from useragent import USERAGENT
+from useragent import HEADERS
 
 def get_article_text(article_name, lang='en'):
     resp = r.post(
@@ -20,9 +20,7 @@ def get_article_text(article_name, lang='en'):
             "rvprop": "content",
             "rvslots": "main"
         },
-        headers={
-            'User-Agent': USERAGENT
-        },
+        headers=HEADERS,
         timeout=10)
 
     respjson = resp.json()
@@ -40,9 +38,7 @@ def get_article_text(article_name, lang='en'):
             "prop": "externallinks",
             "formatversion": "2"
         },
-        headers={
-            'User-Agent': USERAGENT
-        },
+        headers=HEADERS,
         timeout=10)
     respjson = resp.json()
     extlinks = respjson['parse']['externallinks']
@@ -67,7 +63,7 @@ def get_oldest_revision_time(article_name, lang='en'):
             "format": "json"
         }
 
-        response = r.get(url, params=params, headers={ 'User-Agent': USERAGENT }, timeout=10)
+        response = r.get(url, params=params, headers=HEADERS, timeout=10)
         data = response.json()
 
         pages = data.get("query", {}).get("pages", {})
@@ -162,8 +158,8 @@ def parse_cite_templates_from_article(text: str, oldest_rev_time: str) -> (List[
     return (intresting_templates, count)
 
 
-def analyze_article(name: str):
-    article = get_article_text(name)
+def analyze_article(name: str, lang: str = 'en'):
+    article = get_article_text(name, lang)
     if article['exists']:
         json_data = parse_cite_templates_from_article(article['text'], article['oldest_rev_time'])
         article['text'] = ''
@@ -173,8 +169,8 @@ def analyze_article(name: str):
     return article
 
 
-def analyze_article_and_urls(name: str):
-    article = analyze_article(name)
+def analyze_article_and_urls(name: str, lang: str = 'en'):
+    article = analyze_article(name, lang)
     if article['exists']:
         json_data = article['template_info']
         for data in json_data:

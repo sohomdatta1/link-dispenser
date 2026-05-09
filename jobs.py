@@ -54,9 +54,9 @@ def crawl_page(json_data: dict, num: int, rid: UUID) -> None:
 def alive(a: int, b:int) -> int:
     return a + b
 
-def push_analysis(article_name: str):
+def push_analysis(article_name: str, language: str):
     run_id = uuid()
-    article_data = analyze_article(article_name)
+    article_data = analyze_article(article_name, lang=language)
     if article_data['exists']:
         citation_data = article_data['template_info']
         count = 0

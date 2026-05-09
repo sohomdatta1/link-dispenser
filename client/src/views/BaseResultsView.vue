@@ -2,7 +2,7 @@
     <div class="wrapper">
     <cdx-progress-bar aria--label="Analyzing" v-if="!showResults" inline />
     <div v-if="!showResults" class="maho-text-wrapper">
-        <div>Analyzing <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a>, this might take a while..... I'd suggest grabbing a cup of coffee, taking a walk or doing some other activity. ({{ totalCount }}/{{ totalCitationCountRef }} URLs processed)</div>
+        <div>Analyzing <a :href='`https://${ $route.params.lang || "en" }.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a>, this might take a while..... I'd suggest grabbing a cup of coffee, taking a walk or doing some other activity. ({{ totalCount }}/{{ totalCitationCountRef }} URLs processed)</div>
     </div>
     <div v-if="showResults && notSuccess" class="maho-text-wrapper">
         This article does not exist.
@@ -16,7 +16,7 @@
             <div>
                 <div class="floating-header">
                     <div class="title-and-link-wrapper">
-                        <h1 class="title-of-run-page">Results for <a :href='`https://en.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a></h1>
+                        <h1 class="title-of-run-page">Results for <a :href='`https://${ $route.params.lang || "en" }.wikipedia.org/wiki/${ $route.params.articleName }`'>{{ $route.params.articleName }}</a></h1>
                         <div v-if="!erroredOut && permanentLink" class="permanent-link-wrapper">
                             <div class="link-container">
                                 <a :href="permanentLink" class="link-url cdx-docs-link" target="_blank" rel="noopener noreferrer">{{ permanentLink }}</a>
@@ -191,12 +191,13 @@ export default defineComponent({
         ]);
         
         const pagename = route.params.articleName;
+        const lang = route.params.lang || 'en';
         const nocache = new URL( location.href ).searchParams.get( 'nocache' );
         const recache = new URL( location.href ).searchParams.get( 'recache' );
         const forcecache = new URL( location.href ).searchParams.get( 'forcecache' );
 
         async function initData() {
-            const resp = await fetch( `/api/push_analysis/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? recache || Math.random() : 'yes' }${ forcecache ? '&forcecache=yes': '' }` )
+            const resp = await fetch( `/api/push_analysis/${lang}/${ encodeURIComponent( String( pagename ) ) }?cache=${ nocache ? recache || Math.random() : 'yes' }${ forcecache ? '&forcecache=yes': '' }` )
             if (resp.status === 401) {
                 window.location.href = `/auth/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`;
                 return;

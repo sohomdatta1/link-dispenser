@@ -21,14 +21,32 @@ const router = createRouter({
       meta: { public: true }
     },
     {
-      path: '/analyze/:articleName(.*)',
+      path: '/analyze/:lang/:articleName(.*)',
       name: 'analyze',
       component: AnalyzedResultsView
     },
     {
-      path: '/llmanalyze/:articleName(.*)',
+      path: '/llmanalyze/:lang/:articleName(.*)',
       name: 'llmanalyze',
       component: LLMResultsView
+    },
+    {
+      path: '/analyze/:articleName(.*)',
+      name: 'legacyAnalyze',
+      component: AnalyzedResultsView,
+      props: route => ({
+        lang: 'en',
+        articleName: route.params.articleName
+      })
+    },
+    {
+      path: '/llmanalyze/:articleName(.*)',
+      name: 'legacyLlmanalyze',
+      component: LLMResultsView,
+      props: route => ({
+        lang: 'en',
+        articleName: route.params.articleName
+      })
     },
     {
       path: '/analysis/:uuid',

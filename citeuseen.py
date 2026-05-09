@@ -1,7 +1,7 @@
 import re
 import tldextract
 import requests
-from useragent import USERAGENT
+from useragent import HEADERS
 from redis_init import REDIS_KEY_PREFIX, rediscl
 import json
 
@@ -164,7 +164,7 @@ CITE_UNSEEN_SOURCE_TO_PAGE = {
 
 def fetch_revids():
     try:
-        r = requests.get(REVIDS_URL, headers={ 'User-Agent': USERAGENT }, timeout=5)
+        r = requests.get(REVIDS_URL, headers=HEADERS, timeout=5)
         r.raise_for_status()
         return r.json()
     except Exception:
@@ -180,7 +180,7 @@ def fetch_wikitext_from_revisions(revids):
         "rvprop": "content",
         "formatversion": "2"
     }
-    r = requests.get(API_URL, headers={ 'User-Agent': USERAGENT }, params=params, timeout=10)
+    r = requests.get(API_URL, headers=HEADERS, params=params, timeout=10)
     r.raise_for_status()
     data = r.json()
     texts = []

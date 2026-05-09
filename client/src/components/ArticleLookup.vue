@@ -1,6 +1,19 @@
 <template>
 	<div>
 		<cdx-field class="field">
+			<cdx-select
+			v-model:selected="langSelection"
+			:menu-items="langItems"
+			default-label="Language"
+		/>
+		<template #label>
+				Select a language edition
+		</template>
+		<template #help-text>
+			Only enwiki and hiwiki are currently supported.
+		</template>
+		</cdx-field>
+		<cdx-field class="field">
 			<cdx-lookup
 				v-model:selected="selection"
 				:menu-items="menuItems"
@@ -41,13 +54,14 @@
 
 <script lang="ts">
 import { defineComponent, ref, type Ref } from 'vue';
-import { CdxLookup, CdxField, CdxCheckbox, CdxButton } from '@wikimedia/codex';
+import { CdxLookup, CdxField, CdxSelect, CdxCheckbox, CdxButton } from '@wikimedia/codex';
 
 export default defineComponent( {
 	name: 'ArticleLookup',
-	components: { CdxLookup, CdxField, CdxCheckbox, CdxButton },
+	components: { CdxLookup, CdxField, CdxSelect, CdxCheckbox, CdxButton },
 	setup() {
 		const selection: Ref<any> = ref( null );
+		const langSelection: Ref<string> = ref( 'en' );
 		const menuItems: Ref<any[]> = ref( [] );
 		const currentSearchTerm = ref( '' );
 		const checkLLM = ref( false );
@@ -67,7 +81,7 @@ export default defineComponent( {
 				"origin": "*"
 			} );
 
-			return fetch( `https://en.wikipedia.org/w/api.php?${ params.toString() }`, { 'headers': { 'Api-User-Agent': 'Wikimedia-Toolforge-Link-Dispenser/1.0' } } )
+			return fetch( `https://${langSelection.value}.wikipedia.org/w/api.php?${ params.toString() }`, { 'headers': { 'Api-User-Agent': 'Wikimedia-Toolforge-Link-Dispenser/1.0' } } )
 				.then( ( response ) => response.json() );
 		}
 
@@ -137,7 +151,7 @@ export default defineComponent( {
 			if ( selection.value ) {
 				const basePath = checkLLM.value ? '/llmanalyze' : '/analyze';
 				const cacheBypass = bypassCache.value ? new URLSearchParams({ 'nocache': 'yes' }) : '';
-				document.location.href = `${basePath}/${encodeURIComponent(selection.value)}${cacheBypass}`;
+				document.location.href = `${basePath}/${langSelection.value}/${encodeURIComponent(selection.value)}${cacheBypass}`;
 			}
 		}
 
@@ -145,9 +159,16 @@ export default defineComponent( {
 			visibleItemLimit: 6
 		};
 
+		const langItems = [
+			{ label: 'English', value: 'en' },
+			{ label: 'Hindi', value: 'hi' }
+		];
+
 		return {
+			langSelection,
 			selection,
 			menuItems,
+			langItems,
 			menuConfig,
 			checkLLM,
 			bypassCache,
@@ -161,7 +182,7 @@ export default defineComponent( {
 
 <style lang='less' scoped>
 @import '@wikimedia/codex-design-tokens/theme-wikimedia-ui.less';
-.field {
+.field:first-child {
 	padding-top: @spacing-100;
 }
 </style>

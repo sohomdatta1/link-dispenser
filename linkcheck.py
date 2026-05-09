@@ -9,7 +9,7 @@ from uuid import uuid4
 import tldextract
 from citeuseen import annotate_url as get_citeunseen_data_for_url
 import re
-from useragent import USERAGENT
+from useragent import HEADERS, USERAGENT
 
 
 headers = json.load(open('headers.json', encoding='utf-8'))
@@ -208,7 +208,7 @@ def get_wikimedia_citoid_data(url: str) -> dict:
     try:
         u = parse_url(url)
         encoded_url = urlencode(u.geturl())
-        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers={ 'User-Agent': USERAGENT }, timeout=10_000)
+        response = r.get(f'https://en.wikipedia.org/api/rest_v1/data/citation/mediawiki/{encoded_url}', headers=HEADERS, timeout=10_000)
         response.raise_for_status()
         return response.json()
     except Exception as e:
